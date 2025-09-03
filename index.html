@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn and Play</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+        }
+        .container {
+            direction: rtl;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-sm p-6 text-center">
+        <h1 class="text-4xl font-bold text-blue-600">ברוכים הבאים ל-Learn and Play!</h1>
+        <p class="mt-2 text-lg text-gray-600">הפרויקט שלנו נוצר במטרה להפוך את תהליך הלמידה לחוויה מהנה ומאתגרת באמצעות משחקים חינוכיים.</p>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="max-w-4xl mx-auto p-6 mt-8">
+
+        <!-- Web Apps Section -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 border-b-2 pb-2">אפליקציות Web (למחשב)</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-right table-auto">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2 font-semibold">שם המשחק</th>
+                            <th class="px-4 py-2 font-semibold">תיאור</th>
+                            <th class="px-4 py-2 font-semibold">קישור</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="px-4 py-3">**משחק פצצות לוח הכפל**</td>
+                            <td class="px-4 py-3">תרגול לוח הכפל תוך כדי משחק מהיר ומותח.</td>
+                            <td class="px-4 py-3"><a href="bomb_multiplications.html" class="text-blue-500 hover:text-blue-700 font-medium">קישור למשחק</a></td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-4 py-3">**זיהוי סימני חלוקה**</td>
+                            <td class="px-4 py-3">משחק מהיר לזיהוי סימני חלוקה.</td>
+                            <td class="px-4 py-3"><a href="devision_signs.html" class="text-blue-500 hover:text-blue-700 font-medium">קישור למשחק</a></td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-4 py-3">**תרגול חלוקה עם שארית**</td>
+                            <td class="px-4 py-3">אפליקציה לתרגול יסודי של חלוקה עם שארית.</td>
+                            <td class="px-4 py-3"><a href="division_with_remainder.html" class="text-blue-500 hover:text-blue-700 font-medium">קישור לאפליקציה</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Android App Section -->
+        <section class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 border-b-2 pb-2">אפליקציה לאנדרואיד</h2>
+            <p class="text-gray-600 mb-4">אפליקציה לתרגול חשבון לילדים על מכשירי אנדרואיד.</p>
+            <div class="flex flex-col space-y-2">
+                <a href="ElemCalc21_20221119.apk" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 text-center font-bold transition-colors">הורד קובץ APK להתקנה ישירה</a>
+<!--                 <a href="https://github.com/odedliv/learn-and-play/archive/refs/heads/main.zip" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 text-center font-bold transition-colors">הורד את קובץ המאגר המלא</a> -->
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>
