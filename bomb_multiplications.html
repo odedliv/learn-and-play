@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק מספרים</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+        }
+
+        /* אנימציה לנפילת הפצצה */
+        @keyframes fall {
+            from { top: -150px; }
+            to { top: 100%; }
+        }
+        .falling {
+            animation-name: fall;
+            animation-timing-function: linear;
+            /* משך האנימציה ייקבע על ידי JavaScript */
+        }
+        
+        /* אנימציה לרעידה קלה בתשובה שגויה */
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        /* --- עיצוב הפצצה והפיצוץ --- */
+        #bomb {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background-color: #2d3748;
+            border-radius: 60% 60% 40% 40% / 50% 50% 50% 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 3px solid #1a202c;
+            transition: font-size 0.2s ease-in-out;
+            visibility: visible;
+        }
+
+        #bomb::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: calc(50% - 5px);
+            width: 10px;
+            height: 20px;
+            background-color: #a0aec0;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .blinking {
+            animation: blink 0.2s 3;
+        }
+        @keyframes blink {
+            50% { opacity: 0.5; transform: scale(1.05); }
+        }
+
+        .fragment {
+            position: absolute;
+            background-color: #2d3748;
+            border: 1px solid #1a202c;
+        }
+
+        .shockwave {
+            position: absolute;
+            border-radius: 50%;
+            background-color: #2d3748;
+            opacity: 0.5;
+            transform: translate(-50%, -50%) scale(0);
+            animation: expand 0.6s ease-out forwards;
+        }
+        @keyframes expand {
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col-reverse md:flex-row min-h-screen p-4 gap-4">
+
+    <!-- 
+      אזור המשחק הראשי
+    -->
+    <div id="game-area" class="w-full md:w-2/3 h-[70vh] md:h-auto bg-sky-100 border-4 border-sky-300 rounded-lg shadow-inner relative">
+        <div id="bomb" class="z-20">
+            <span id="exercise"></span>
+        </div>
+        <div id="city" class="absolute bottom-0 left-0 w-full h-[15%] pointer-events-none z-10">
+            <svg width="100%" height="100%" viewBox="0 0 800 120" preserveAspectRatio="none" class="absolute bottom-0 left-0">
+                 <rect x="0" y="110" width="800" height="10" fill="#2f855a"></rect>
+                <rect x="50" y="80" width="4" height="30" fill="#4a5568"></rect>
+                <circle cx="52" cy="80" r="6" fill="#f6e05e"></circle>
+                <path d="M100,110 L100,50 L140,30 L180,50 L180,110 Z" fill="#4a5568"></path>
+                <rect x="115" y="60" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="150" y="60" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="132" y="90" width="16" height="20" fill="#2d3748"></rect>
+                <rect x="200" y="90" width="10" height="20" fill="#654321"></rect>
+                <circle cx="205" cy="80" r="20" fill="#38a169"></circle>
+                <rect x="250" y="20" width="100" height="90" fill="#2d3748"></rect>
+                <rect x="260" y="30" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="290" y="30" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="320" y="30" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="260" y="55" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="290" y="55" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="320" y="55" width="15" height="15" fill="#a0aec0"></rect>
+                <rect x="290" y="85" width="20" height="25" fill="#4a5568"></rect>
+                <rect x="380" y="60" width="80" height="50" fill="#4a5568"></rect>
+                <rect x="395" y="90" width="15" height="20" fill="#2d3748"></rect>
+                <rect x="425" y="70" width="20" height="10" fill="#a0aec0"></rect>
+                <rect x="480" y="80" width="10" height="30" fill="#654321"></rect>
+                <circle cx="485" cy="70" r="25" fill="#38a169"></circle>
+                <path d="M550,110 L550,70 L600,40 L650,70 L650,110 Z" fill="#2d3748"></path>
+                <rect x="585" y="85" width="30" height="25" fill="#4a5568"></rect>
+                <rect x="700" y="70" width="4" height="40" fill="#4a5568"></rect>
+                <circle cx="702" cy="70" r="6" fill="#f6e05e"></circle>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 
+      אזור לוח המספרים ותיבת הטקסט
+    -->
+    <div class="w-full md:w-1/3 flex flex-col items-center space-y-2">
+        <!-- תצוגת ניקוד מצטבר -->
+        <div id="cumulative-score-display" class="w-full max-w-md p-3 text-center text-2xl font-bold rounded-lg bg-blue-600 text-white shadow-md">
+            ניקוד מצטבר: 0
+        </div>
+        
+        <!-- תצוגת חיים -->
+        <div id="lives-display" class="w-full max-w-md p-2 text-center text-3xl">
+            <!-- הלבבות יוכנסו כאן -->
+        </div>
+
+        <h1 class="text-2xl font-bold text-gray-800 mt-2">לוח המספרים</h1>
+        
+        <!-- תצוגת רמת קושי -->
+        <div id="difficulty-display" class="w-full max-w-md p-2 text-center text-xl font-bold rounded-lg transition-all">
+            <!-- הטקסט והצבע יוכנסו כאן -->
+        </div>
+
+        <div id="number-board" dir="ltr" class="grid grid-cols-10 gap-1 bg-blue-200 p-2 rounded-lg shadow-md w-full max-w-md">
+            <!-- המספרים יתווספו כאן -->
+        </div>
+        <div class="w-full max-w-md">
+             <input type="text" id="answer-input" placeholder="או הקלד את התשובה כאן"
+                   class="w-full p-3 text-center text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"
+                   autocomplete="off">
+        </div>
+    </div>
+
+    <!-- חלון "המשחק נגמר" -->
+    <div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg text-center shadow-2xl">
+            <h2 class="text-4xl font-bold mb-4 text-gray-800">המשחק נגמר!</h2>
+            <p class="text-2xl mb-6 text-gray-600">ניקוד סופי: <span id="final-score" class="font-bold text-blue-600">0</span></p>
+            <button id="play-again-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-xl transition-transform transform hover:scale-105">
+                שחק שוב
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- הגדרת משתנים גלובליים ---
+        const gameArea = document.getElementById('game-area');
+        const board = document.getElementById('number-board');
+        const bomb = document.getElementById('bomb');
+        const exerciseText = document.getElementById('exercise');
+        const answerInput = document.getElementById('answer-input');
+        const difficultyDisplay = document.getElementById('difficulty-display');
+        const cumulativeScoreDisplay = document.getElementById('cumulative-score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const finalScoreSpan = document.getElementById('final-score');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        
+        let currentAnswer = 0;
+        let isExploding = false;
+        let currentMaxPoints = 0;
+        let cumulativeScore = 0;
+        let lives = 5;
+        let fallDuration = 40; // מהירות התחלתית (40 שניות)
+
+        const difficultyLevels = {
+            1: { text: "קל מאד", points: 10, color: 'text-green-600', bg: 'bg-green-100' },
+            2: { text: "קל", points: 20, color: 'text-yellow-600', bg: 'bg-yellow-100' },
+            3: { text: "בינוני", points: 30, color: 'text-orange-600', bg: 'bg-orange-100' },
+            4: { text: "קשה", points: 50, color: 'text-red-600', bg: 'bg-red-100' }
+        };
+
+        function getDifficultyScore(num) {
+            if (num === 1 || num === 10) return 1;
+            if (num === 2) return 2;
+            if ([3, 4, 5, 9].includes(num)) return 3;
+            if ([6, 7, 8].includes(num)) return 4;
+            return 1;
+        }
+
+        function updateLivesDisplay() {
+            livesDisplay.innerHTML = '';
+            // הצגת לבבות אדומים עבור החיים שנותרו
+            for (let i = 0; i < lives; i++) {
+                livesDisplay.innerHTML += '❤️';
+            }
+            // הצגת לבבות שחורים עבור החיים שאבדו
+            for (let i = 0; i < 5 - lives; i++) {
+                livesDisplay.innerHTML += '🖤';
+            }
+        }
+
+        function createBoard() {
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('flex', 'items-center', 'justify-center', 'h-12', 'w-full', 'bg-blue-50', 'rounded-md', 'cursor-pointer', 'text-lg', 'font-semibold', 'text-blue-800', 'transition-all', 'duration-200', 'hover:bg-yellow-300', 'hover:scale-110', 'hover:shadow-lg');
+                cell.textContent = i;
+                cell.dataset.number = i;
+                board.appendChild(cell);
+            }
+        }
+        
+        function createDeconstruction(x, y) {
+            const particleCount = 10;
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('fragment');
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 60 + 30;
+                const targetX = Math.cos(angle) * distance;
+                const targetY = Math.sin(angle) * distance;
+                particle.style.width = `${Math.random() * 15 + 5}px`;
+                particle.style.height = `${Math.random() * 15 + 5}px`;
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.animate([{ transform: 'translate(-50%, -50%) rotate(0deg)', opacity: 1 }, { transform: `translate(${targetX}px, ${targetY}px) rotate(360deg)`, opacity: 0 }], { duration: 800, easing: 'cubic-bezier(0.1, 0.7, 1.0, 0.1)' });
+                fragment.appendChild(particle);
+            }
+            gameArea.appendChild(fragment);
+            setTimeout(() => gameArea.querySelectorAll('.fragment').forEach(p => p.remove()), 800);
+        }
+
+        function createShockwave(x, y) {
+            const shockwave = document.createElement('div');
+            shockwave.classList.add('shockwave');
+            shockwave.style.left = `${x}px`;
+            shockwave.style.top = `${y}px`;
+            const size = Math.min(gameArea.offsetWidth, gameArea.offsetHeight) * 0.5;
+            shockwave.style.width = `${size}px`;
+            shockwave.style.height = `${size}px`;
+            gameArea.appendChild(shockwave);
+            setTimeout(() => shockwave.remove(), 600);
+        }
+
+        function launchBomb() {
+            if (lives <= 0) {
+                gameOver();
+                return;
+            }
+            isExploding = false;
+            bomb.style.visibility = 'visible';
+            bomb.classList.remove('falling', 'blinking');
+            bomb.style.top = '';
+            bomb.style.left = '';
+            bomb.style.fontSize = '1.8rem';
+            
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            currentAnswer = num1 * num2;
+            exerciseText.textContent = `${num1} × ${num2}`;
+
+            const score1 = getDifficultyScore(num1);
+            const score2 = getDifficultyScore(num2);
+            const finalScore = Math.min(score1, score2);
+            const level = difficultyLevels[finalScore];
+            currentMaxPoints = level.points;
+
+            difficultyDisplay.textContent = `${level.text}: ${level.points} נקודות`;
+            difficultyDisplay.className = 'w-full max-w-md p-2 text-center text-xl font-bold rounded-lg transition-all';
+            difficultyDisplay.classList.add(level.color, level.bg);
+
+            const containerWidth = gameArea.offsetWidth;
+            const bombWidth = bomb.offsetWidth;
+            const randomX = Math.random() * (containerWidth - bombWidth);
+            bomb.style.left = randomX + 'px';
+
+            // קביעת משך האנימציה באופן דינמי
+            bomb.style.animationDuration = `${fallDuration}s`;
+            bomb.classList.add('falling');
+        }
+        
+        function triggerExplosion(isCityHit = false) {
+            if (isExploding) return;
+            isExploding = true;
+            
+            // עדכון המהירות לסיבוב הבא
+            if (fallDuration > 10) {
+                fallDuration--;
+            }
+
+            const bombRect = bomb.getBoundingClientRect();
+            const containerRect = gameArea.getBoundingClientRect();
+            
+            if (isCityHit) {
+                lives--;
+                updateLivesDisplay();
+            } else {
+                const gameAreaHeight = containerRect.height;
+                const topScoringBoundary = gameAreaHeight * 0.1;
+                const bottomScoringBoundary = gameAreaHeight * 0.9;
+                const scoringZoneHeight = bottomScoringBoundary - topScoringBoundary;
+                const bombTopPosition = bombRect.top - containerRect.top;
+                
+                let relativeHeight = 1.0;
+                if (bombTopPosition > topScoringBoundary) {
+                    const bombPositionInZone = bombTopPosition - topScoringBoundary;
+                    const progress = Math.min(bombPositionInZone / scoringZoneHeight, 1);
+                    relativeHeight = 1.0 - (progress * 0.9);
+                }
+                const calculatedPoints = Math.floor(currentMaxPoints * relativeHeight);
+                cumulativeScore += calculatedPoints;
+                cumulativeScoreDisplay.textContent = `ניקוד מצטבר: ${cumulativeScore}`;
+            }
+
+            const explosionX = bombRect.left - containerRect.left + bombRect.width / 2;
+            const explosionY = bombRect.top - containerRect.top + bombRect.height / 2;
+
+            bomb.classList.remove('falling');
+            bomb.style.animationDuration = ''; // איפוס משך האנימציה
+            bomb.style.top = `${bombRect.top - containerRect.top}px`;
+            bomb.style.left = `${bombRect.left - containerRect.left}px`;
+            exerciseText.textContent = currentAnswer;
+            bomb.style.fontSize = '3rem';
+            bomb.classList.add('blinking');
+            
+            setTimeout(() => {
+                bomb.style.visibility = 'hidden';
+                createDeconstruction(explosionX, explosionY);
+                setTimeout(() => createShockwave(explosionX, explosionY), 100);
+                setTimeout(launchBomb, 1500);
+            }, 600);
+        }
+
+        function gameOver() {
+            finalScoreSpan.textContent = cumulativeScore;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        function resetGame() {
+            cumulativeScore = 0;
+            lives = 5;
+            fallDuration = 40; // איפוס המהירות
+            cumulativeScoreDisplay.textContent = `ניקוד מצטבר: ${cumulativeScore}`;
+            updateLivesDisplay();
+            gameOverModal.classList.add('hidden');
+            launchBomb();
+        }
+
+        board.addEventListener('click', function(event) {
+            const clickedCell = event.target.closest('[data-number]');
+            if (!clickedCell || isExploding) return;
+            const clickedNumber = parseInt(clickedCell.dataset.number, 10);
+            if (clickedNumber === currentAnswer) {
+                triggerExplosion();
+            } else {
+                if (!clickedCell.classList.contains('shake')) {
+                    clickedCell.classList.add('shake');
+                    setTimeout(() => clickedCell.classList.remove('shake'), 500);
+                }
+            }
+        });
+
+        answerInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^-0-9.]/g, '');
+            const typedNumber = parseFloat(this.value);
+            if (typedNumber === currentAnswer) {
+                triggerExplosion();
+                this.value = '';
+            }
+        });
+        
+        function gameLoop() {
+            if (!isExploding && bomb.classList.contains('falling')) {
+                const bombRect = bomb.getBoundingClientRect();
+                const gameAreaRect = gameArea.getBoundingClientRect();
+                const impactZone = gameAreaRect.top + gameAreaRect.height * 0.9;
+                if (bombRect.bottom >= impactZone) {
+                    triggerExplosion(true);
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        playAgainBtn.addEventListener('click', resetGame);
+
+        // --- התחלת המשחק ---
+        createBoard();
+        updateLivesDisplay();
+        launchBomb();
+        gameLoop();
+    </script>
+
+</body>
+</html>
+
+
