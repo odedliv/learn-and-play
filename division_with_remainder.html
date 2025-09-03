@@ -1,303 +1,339 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תרגול חילוק עם שארית</title>
+    
+    <!-- Load React, ReactDOM, and Babel for JSX transformation -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-// Main App Component
-function App() {
-  // State for settings
-  const [minDividend, setMinDividend] = useState(10);
-  const [maxDividend, setMaxDividend] = useState(100);
-  const [minDivisor, setMinDivisor] = useState(2);
-  const [maxDivisor, setMaxDivisor] = useState(10);
-  const [showSettings, setShowSettings] = useState(true); // Control which view to show
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Google Font (Heebo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom styles for RTL and font -->
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+        }
+        .rtl-text {
+            direction: rtl;
+            unicode-bidi: embed;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-  // State for current problem
-  const [dividend, setDividend] = useState(0);
-  const [divisor, setDivisor] = useState(0);
-  const [correctQuotient, setCorrectQuotient] = useState(0);
-  const [correctRemainder, setCorrectRemainder] = useState(0);
+    <script type="text/babel">
+        // Use React, useState, etc., from the global scope after loading the CDN scripts
+        const { useState, useEffect, useRef, useCallback } = React;
+        const { createRoot } = ReactDOM;
 
-  // State for user input
-  const [userQuotient, setUserQuotient] = useState('');
-  const [userRemainder, setUserRemainder] = useState('');
+        // Component for the main app
+        function App() {
+            // State for settings
+            const [minDividend, setMinDividend] = useState(10);
+            const [maxDividend, setMaxDividend] = useState(100);
+            const [minDivisor, setMinDivisor] = useState(2);
+            const [maxDivisor, setMaxDivisor] = useState(10);
+            const [showSettings, setShowSettings] = useState(true);
 
-  // State for feedback
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [isCorrect, setIsCorrect] = useState(null); // null: no check, true: correct, false: incorrect
+            // State for current problem
+            const [dividend, setDividend] = useState(0);
+            const [divisor, setDivisor] = useState(0);
+            const [correctQuotient, setCorrectQuotient] = useState(0);
+            const [correctRemainder, setCorrectRemainder] = useState(0);
 
-  // Audio references
-  const correctSoundRef = useRef(null);
-  const incorrectSoundRef = useRef(null);
+            // State for user input
+            const [userQuotient, setUserQuotient] = useState('');
+            const [userRemainder, setUserRemainder] = useState('');
 
-  // Initialize audio elements once with more robust Base64 audio data
-  useEffect(() => {
-    // A short, clear "ding" sound for correct answer
-    correctSoundRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARwAAIAAAACAAAABAAEAIAACAAAEAIAADBAABAAgAAABJREEgQmFzZTY0IEV4YW1wbGUgQXVkaW8AAAAXoBAAAAEqAAA/oAAADJAAAFJAAAASAAACAAAAgAAABoAAAAgAAAAAAAAABAAIAAgAAAAIAACAAAAAA');
-    // A short, clear "buzz" sound for incorrect answer
-    incorrectSoundRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARwAAIAAAACAAAABAAEAIAACAAAEAIAADBAABAAgAAABJREEgQmFzZTY0IEV4YW1wbGUgQXVkaW8AAAAXoBAAAAEqAAA/oAAADJAAAFJAAAASAAACAAAAgAAABoAAAAgAAAAAAAAABAAIAAgAAAAIAACAAAAAA');
-  }, []);
+            // State for feedback
+            const [feedbackMessage, setFeedbackMessage] = useState('');
+            const [isCorrect, setIsCorrect] = useState(null);
 
-  // Function to play sound
-  const playSound = useCallback((type) => {
-    if (type === 'correct' && correctSoundRef.current) {
-      correctSoundRef.current.play().catch(e => console.error("Error playing correct sound:", e));
-    } else if (type === 'incorrect' && incorrectSoundRef.current) {
-      incorrectSoundRef.current.play().catch(e => console.error("Error playing incorrect sound:", e));
-    }
-  }, []);
+            // Audio references
+            const correctSoundRef = useRef(null);
+            const incorrectSoundRef = useRef(null);
 
-  // Function to generate a new problem
-  const generateProblem = useCallback(() => {
-    // Ensure valid ranges to prevent infinite loops
-    if (minDivisor > maxDivisor || minDividend > maxDividend) {
-      setFeedbackMessage("ודא שטווח המינימום אינו גדול מטווח המקסימום.");
-      return;
-    }
+            // Initialize audio elements once with robust Base64 audio data
+            useEffect(() => {
+                correctSoundRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARwAAIAAAACAAAABAAEAIAACAAAEAIAADBAABAAgAAABJREEgQmFzZTY0IEV4YW1wbGUgQXVkaW8AAAAXoBAAAAEqAAA/oAAADJAAAFJAAAASAAACAAAAgAAABoAAAAgAAAAAAAAABAAIAAgAAAAIAACAAAAAA');
+                incorrectSoundRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARwAAIAAAACAAAABAAEAIAACAAAEAIAADBAABAAgAAABJREEgQmFzZTY0IEV4YW1wbGUgQXVkaW8AAAAXoBAAAAEqAAA/oAAADJAAAFJAAAASAAACAAAAgAAABoAAAAgAAAAAAAAABAAIAAgAAAAIAACAAAAAA');
+            }, []);
 
-    let newDividend;
-    let newDivisor;
-    let remainder;
+            const playSound = useCallback((type) => {
+                if (type === 'correct' && correctSoundRef.current) {
+                    correctSoundRef.current.play().catch(e => console.error("Error playing correct sound:", e));
+                } else if (type === 'incorrect' && incorrectSoundRef.current) {
+                    incorrectSoundRef.current.play().catch(e => console.error("Error playing incorrect sound:", e));
+                }
+            }, []);
 
-    // Generate until a valid division with a remainder (or zero remainder) is found
-    // and the divisor is not zero
-    do {
-      newDividend = Math.floor(Math.random() * (maxDividend - minDividend + 1)) + minDividend;
-      newDivisor = Math.floor(Math.random() * (maxDivisor - minDivisor + 1)) + minDivisor;
-      remainder = newDividend % newDivisor;
-    } while (newDivisor === 0 || newDividend < newDivisor); // Ensure divisor is not 0 and dividend is >= divisor
+            // Function to generate a new problem
+            const generateProblem = useCallback(() => {
+                if (minDivisor > maxDivisor || minDividend > maxDividend) {
+                    setFeedbackMessage("ודא שטווח המינימום אינו גדול מטווח המקסימום.");
+                    return;
+                }
 
-    const quotient = Math.floor(newDividend / newDivisor);
+                let newDividend;
+                let newDivisor;
+                let remainder;
 
-    setDividend(newDividend);
-    setDivisor(newDivisor);
-    setCorrectQuotient(quotient);
-    setCorrectRemainder(remainder);
+                do {
+                    newDividend = Math.floor(Math.random() * (maxDividend - minDividend + 1)) + minDividend;
+                    newDivisor = Math.floor(Math.random() * (maxDivisor - minDivisor + 1)) + minDivisor;
+                    remainder = newDividend % newDivisor;
+                } while (newDivisor === 0 || newDividend < newDivisor);
 
-    // Clear user input and feedback for new problem
-    setUserQuotient('');
-    setUserRemainder('');
-    setFeedbackMessage('');
-    setIsCorrect(null);
-  }, [minDividend, maxDividend, minDivisor, maxDivisor]);
+                const quotient = Math.floor(newDividend / newDivisor);
 
-  // Initial problem generation when ranges are set and view switches to practice
-  useEffect(() => {
-    if (!showSettings) {
-      generateProblem();
-    }
-  }, [showSettings, generateProblem]);
+                setDividend(newDividend);
+                setDivisor(newDivisor);
+                setCorrectQuotient(quotient);
+                setCorrectRemainder(remainder);
 
-  // Function to handle settings submission
-  const handleSetRanges = () => {
-    // Basic validation for ranges
-    if (minDividend < 1 || maxDividend < 1 || minDivisor < 1 || maxDivisor < 1) {
-      setFeedbackMessage("כל הטווחים חייבים להיות מספרים חיוביים.");
-      return;
-    }
-    if (minDividend > maxDividend) {
-      setFeedbackMessage("המינימום של המחולק חייב להיות קטן או שווה למקסימום.");
-      return;
-    }
-    if (minDivisor > maxDivisor) {
-      setFeedbackMessage("המינימום של המחלק חייב להיות קטן או שווה למקסימום.");
-      return;
-    }
-    if (minDividend < minDivisor && maxDividend < maxDivisor) {
-        setFeedbackMessage("המחולק חייב להיות גדול או שווה למחלק כדי שיהיה ניתן לבצע חילוק.");
-        return;
-    }
-    if (minDividend <= 0 || maxDividend <= 0 || minDivisor <= 0 || maxDivisor <= 0) {
-        setFeedbackMessage("המספרים חייבים להיות חיוביים.");
-        return;
-    }
+                setUserQuotient('');
+                setUserRemainder('');
+                setFeedbackMessage('');
+                setIsCorrect(null);
+            }, [minDividend, maxDividend, minDivisor, maxDivisor]);
 
-    setShowSettings(false); // Switch to practice view
-  };
+            // Initial problem generation when ranges are set and view switches to practice
+            useEffect(() => {
+                if (!showSettings) {
+                    generateProblem();
+                }
+            }, [showSettings, generateProblem]);
 
-  // Function to check the user's answer
-  const checkAnswer = () => {
-    const enteredQuotient = parseInt(userQuotient, 10);
-    const enteredRemainder = parseInt(userRemainder, 10);
+            // Function to handle settings submission
+            const handleSetRanges = () => {
+                // Basic validation for ranges
+                if (minDividend < 1 || maxDividend < 1 || minDivisor < 1 || maxDivisor < 1) {
+                    setFeedbackMessage("כל הטווחים חייבים להיות מספרים חיוביים.");
+                    return;
+                }
+                if (minDividend > maxDividend) {
+                    setFeedbackMessage("המינימום של המחולק חייב להיות קטן או שווה למקסימום.");
+                    return;
+                }
+                if (minDivisor > maxDivisor) {
+                    setFeedbackMessage("המינימום של המחלק חייב להיות קטן או שווה למקסימום.");
+                    return;
+                }
+                if (minDividend < minDivisor && maxDividend < maxDivisor) {
+                    setFeedbackMessage("המחולק חייב להיות גדול או שווה למחלק כדי שיהיה ניתן לבצע חילוק.");
+                    return;
+                }
+                if (minDividend <= 0 || maxDividend <= 0 || minDivisor <= 0 || maxDivisor <= 0) {
+                    setFeedbackMessage("המספרים חייבים להיות חיוביים.");
+                    return;
+                }
 
-    if (isNaN(enteredQuotient) || isNaN(enteredRemainder)) {
-      setFeedbackMessage("אנא הכנס מספרים למנה ולשארית.");
-      setIsCorrect(false);
-      playSound('incorrect');
-      return;
-    }
+                setShowSettings(false);
+            };
 
-    if (enteredQuotient === correctQuotient && enteredRemainder === correctRemainder) {
-      setFeedbackMessage("כל הכבוד! תשובה נכונה!");
-      setIsCorrect(true);
-      playSound('correct');
-    } else {
-      setFeedbackMessage(`טעות. התשובה הנכונה היא: מנה ${correctQuotient}, שארית ${correctRemainder}.`);
-      setIsCorrect(false);
-      playSound('incorrect');
-    }
-  };
+            // Function to check the user's answer
+            const checkAnswer = () => {
+                const enteredQuotient = parseInt(userQuotient, 10);
+                const enteredRemainder = parseInt(userRemainder, 10);
 
-  // Function to go back to settings
-  const goToSettings = () => {
-    setShowSettings(true);
-    setFeedbackMessage('');
-    setIsCorrect(null);
-  };
+                if (isNaN(enteredQuotient) || isNaN(enteredRemainder)) {
+                    setFeedbackMessage("אנא הכנס מספרים למנה ולשארית.");
+                    setIsCorrect(false);
+                    playSound('incorrect');
+                    return;
+                }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4 font-inter">
-      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full transform transition-all duration-300">
-        <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
-          תרגול חילוק עם שארית
-        </h1>
+                if (enteredQuotient === correctQuotient && enteredRemainder === correctRemainder) {
+                    setFeedbackMessage("כל הכבוד! תשובה נכונה!");
+                    setIsCorrect(true);
+                    playSound('correct');
+                } else {
+                    setFeedbackMessage(`טעות. התשובה הנכונה היא: מנה ${correctQuotient}, שארית ${correctRemainder}.`);
+                    setIsCorrect(false);
+                    playSound('incorrect');
+                }
+            };
 
-        {showSettings ? (
-          /* Parent Settings Section */
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center">הגדרות להורה</h2>
-            <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
-              <div className="flex-1">
-                <label htmlFor="minDividend" className="block text-gray-700 text-sm font-medium mb-2">
-                  מחולק מינימום:
-                </label>
-                <input
-                  type="number"
-                  id="minDividend"
-                  value={minDividend}
-                  onChange={(e) => setMinDividend(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
-                  min="1"
-                />
-              </div>
-              <div className="flex-1">
-                <label htmlFor="maxDividend" className="block text-gray-700 text-sm font-medium mb-2">
-                  מחולק מקסימום:
-                </label>
-                <input
-                  type="number"
-                  id="maxDividend"
-                  value={maxDividend}
-                  onChange={(e) => setMaxDividend(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
-                  min="1"
-                />
-              </div>
-            </div>
+            // Function to go back to settings
+            const goToSettings = () => {
+                setShowSettings(true);
+                setFeedbackMessage('');
+                setIsCorrect(null);
+            };
 
-            <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
-              <div className="flex-1">
-                <label htmlFor="minDivisor" className="block text-gray-700 text-sm font-medium mb-2">
-                  מחלק מינימום:
-                </label>
-                <input
-                  type="number"
-                  id="minDivisor"
-                  value={minDivisor}
-                  onChange={(e) => setMinDivisor(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
-                  min="1"
-                />
-              </div>
-              <div className="flex-1">
-                <label htmlFor="maxDivisor" className="block text-gray-700 text-sm font-medium mb-2">
-                  מחלק מקסימום:
-                </label>
-                <input
-                  type="number"
-                  id="maxDivisor"
-                  value={maxDivisor}
-                  onChange={(e) => setMaxDivisor(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
-                  min="1"
-                />
-              </div>
-            </div>
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4 font-sans">
+                    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full transform transition-all duration-300">
+                        <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
+                            תרגול חילוק עם שארית
+                        </h1>
 
-            {feedbackMessage && (
-              <p className="text-red-600 text-center text-sm font-medium mt-4">{feedbackMessage}</p>
-            )}
+                        {showSettings ? (
+                            /* Parent Settings Section */
+                            <div className="space-y-6">
+                                <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center">הגדרות להורה</h2>
+                                <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                                    <div className="flex-1">
+                                        <label htmlFor="minDividend" className="block text-gray-700 text-sm font-medium mb-2">
+                                            מחולק מינימום:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="minDividend"
+                                            value={minDividend}
+                                            onChange={(e) => setMinDividend(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
+                                            min="1"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="maxDividend" className="block text-gray-700 text-sm font-medium mb-2">
+                                            מחולק מקסימום:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="maxDividend"
+                                            value={maxDividend}
+                                            onChange={(e) => setMaxDividend(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
+                                            min="1"
+                                        />
+                                    </div>
+                                </div>
 
-            <button
-              onClick={handleSetRanges}
-              className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg text-lg font-semibold hover:from-green-600 hover:to-teal-700 transition duration-300 shadow-md"
-            >
-              התחל תרגול
-            </button>
-          </div>
-        ) : (
-          /* Child Practice Section */
-          <div className="space-y-6 text-center">
-            <h2 className="text-3xl font-bold text-gray-700 mb-4">בוא נפתור!</h2>
-            <div className="text-5xl font-extrabold text-blue-600 mb-6 rtl-text">
-              <span className="text-gray-800">{dividend}</span>
-              <span className="mx-4 text-gray-500">÷</span>
-              <span className="text-gray-800">{divisor}</span>
-              <span className="mx-4 text-gray-500">= ?</span>
-            </div>
+                                <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse space-y-4 sm:space-y-0">
+                                    <div className="flex-1">
+                                        <label htmlFor="minDivisor" className="block text-gray-700 text-sm font-medium mb-2">
+                                            מחלק מינימום:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="minDivisor"
+                                            value={minDivisor}
+                                            onChange={(e) => setMinDivisor(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
+                                            min="1"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="maxDivisor" className="block text-gray-700 text-sm font-medium mb-2">
+                                            מחלק מקסימום:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="maxDivisor"
+                                            value={maxDivisor}
+                                            onChange={(e) => setMaxDivisor(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
+                                            min="1"
+                                        />
+                                    </div>
+                                </div>
 
-            <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse justify-center items-center space-y-4 sm:space-y-0">
-              <div className="flex-1 max-w-[150px] w-full">
-                <label htmlFor="userQuotient" className="block text-gray-700 text-sm font-medium mb-2">
-                  מנה:
-                </label>
-                <input
-                  type="number"
-                  id="userQuotient"
-                  value={userQuotient}
-                  onChange={(e) => setUserQuotient(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
-                  inputMode="numeric" // Optimized for number input on mobile
-                />
-              </div>
-              <div className="flex-1 max-w-[150px] w-full">
-                <label htmlFor="userRemainder" className="block text-gray-700 text-sm font-medium mb-2">
-                  שארית:
-                </label>
-                <input
-                  type="number"
-                  id="userRemainder"
-                  value={userRemainder}
-                  onChange={(e) => setUserRemainder(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
-                  inputMode="numeric" // Optimized for number input on mobile
-                />
-              </div>
-            </div>
+                                {feedbackMessage && (
+                                    <p className="text-red-600 text-center text-sm font-medium mt-4">{feedbackMessage}</p>
+                                )}
 
-            <div className="flex flex-col space-y-3 mt-6">
-              <button
-                onClick={checkAnswer}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg text-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition duration-300 shadow-md"
-              >
-                בדיקה
-              </button>
-              <button
-                onClick={generateProblem}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 rounded-lg text-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition duration-300 shadow-md"
-              >
-                תרגיל חדש
-              </button>
-              <button
-                onClick={goToSettings}
-                className="w-full bg-gray-300 text-gray-800 py-3 rounded-lg text-lg font-semibold hover:bg-gray-400 transition duration-300 shadow-md"
-              >
-                חזור להגדרות
-              </button>
-            </div>
+                                <button
+                                    onClick={handleSetRanges}
+                                    className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg text-lg font-semibold hover:from-green-600 hover:to-teal-700 transition duration-300 shadow-md"
+                                >
+                                    התחל תרגול
+                                </button>
+                            </div>
+                        ) : (
+                            /* Child Practice Section */
+                            <div className="space-y-6 text-center">
+                                <h2 className="text-3xl font-bold text-gray-700 mb-4">בוא נפתור!</h2>
+                                <div className="text-5xl font-extrabold text-blue-600 mb-6 rtl-text">
+                                    <span className="text-gray-800">{dividend}</span>
+                                    <span className="mx-4 text-gray-500">÷</span>
+                                    <span className="text-gray-800">{divisor}</span>
+                                    <span className="mx-4 text-gray-500">= ?</span>
+                                </div>
 
-            {feedbackMessage && (
-              <p
-                className={`text-lg font-semibold mt-4 transition-colors duration-300 ${
-                  isCorrect === true ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {feedbackMessage}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                                <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse justify-center items-center space-y-4 sm:space-y-0">
+                                    <div className="flex-1 max-w-[150px] w-full">
+                                        <label htmlFor="userQuotient" className="block text-gray-700 text-sm font-medium mb-2">
+                                            מנה:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="userQuotient"
+                                            value={userQuotient}
+                                            onChange={(e) => setUserQuotient(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
+                                            inputMode="numeric"
+                                        />
+                                    </div>
+                                    <div className="flex-1 max-w-[150px] w-full">
+                                        <label htmlFor="userRemainder" className="block text-gray-700 text-sm font-medium mb-2">
+                                            שארית:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="userRemainder"
+                                            value={userRemainder}
+                                            onChange={(e) => setUserRemainder(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
+                                            inputMode="numeric"
+                                        />
+                                    </div>
+                                </div>
 
-export default App;
+                                <div className="flex flex-col space-y-3 mt-6">
+                                    <button
+                                        onClick={checkAnswer}
+                                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg text-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition duration-300 shadow-md"
+                                    >
+                                        בדיקה
+                                    </button>
+                                    <button
+                                        onClick={generateProblem}
+                                        className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 rounded-lg text-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition duration-300 shadow-md"
+                                    >
+                                        תרגיל חדש
+                                    </button>
+                                    <button
+                                        onClick={goToSettings}
+                                        className="w-full bg-gray-300 text-gray-800 py-3 rounded-lg text-lg font-semibold hover:bg-gray-400 transition duration-300 shadow-md"
+                                    >
+                                        חזור להגדרות
+                                    </button>
+                                </div>
 
+                                {feedbackMessage && (
+                                    <p
+                                        className={`text-lg font-semibold mt-4 transition-colors duration-300 ${
+                                            isCorrect === true ? 'text-green-600' : 'text-red-600'
+                                        }`}
+                                    >
+                                        {feedbackMessage}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Render the app
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
