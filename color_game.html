@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק התאמת צבעים</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0e7ff; /* Light indigo background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); /* 6 columns */
+            gap: 15px;
+            width: 100%;
+            max-width: 800px; /* Max width for the board itself */
+        }
+        .card {
+            background-color: #a78bfa; /* Medium purple */
+            aspect-ratio: 1 / 1; /* Make cards square */
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            perspective: 1000px;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px; /* Added padding for text */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            word-break: break-word; /* Break long words */
+            text-align: center;
+        }
+        .card-front {
+            background-color: #a78bfa; /* Card back color */
+            color: #ffffff;
+            font-size: 2.5rem; /* Larger icon */
+            overflow: hidden; /* Hide overflowing content */
+        }
+        .card-back {
+            background-color: #ede9fe; /* Flipped card background */
+            transform: rotateY(180deg);
+            color: #1a202c; /* Dark text */
+            font-size: 1.25rem; /* Smaller text for content */
+        }
+        .card-back.color-card {
+            border: 2px solid #ccc; /* Add a subtle border to color cards */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 10px; /* Space between items when wrapped */
+        }
+        .controls div {
+            padding: 8px 15px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .btn {
+            background-color: #4f46e5; /* Indigo */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none; /* Remove default button border */
+        }
+        .btn:hover {
+            background-color: #4338ca; /* Darker indigo */
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .message-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+        .message-modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-content h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+        .modal-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #4b5563;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns on smaller screens */
+                gap: 10px;
+            }
+            .card {
+                font-size: 1.2rem;
+            }
+            .card-front {
+                font-size: 2rem;
+            }
+            .card-back {
+                font-size: 1rem;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            .controls div, .btn {
+                width: 100%;
+                text-align: center;
+            }
+            .modal-content {
+                padding: 30px 20px;
+            }
+            .modal-content h2 {
+                font-size: 1.8rem;
+            }
+            .modal-content p {
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns on very small screens */
+            }
+            .card {
+                font-size: 1rem;
+            }
+            .card-front {
+                font-size: 1.5rem;
+            }
+            .card-back {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="text-4xl font-bold text-gray-800 mb-6">משחק התאמת צבעים</h1>
+
+        <div class="controls">
+            <div class="score">ניקוד: <span id="score">0</span></div>
+            <div class="timer">זמן: <span id="timer">0</span> שניות</div>
+            <button id="startGameBtn" class="btn">התחל משחק</button>
+            <button id="resetGameBtn" class="btn hidden">התחל מחדש</button>
+        </div>
+
+        <div id="gameBoard" class="game-board">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="message-modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">ברוך הבא למשחק התאמת צבעים!</h2>
+            <p id="modalMessage">התאימו בין כרטיס הצבע לכרטיס עם שם הצבע בעברית. נסו למצוא את כל הזוגות בזמן הקצר ביותר! לחצו על "התחל משחק" כדי להתחיל.</p>
+            <button id="modalCloseBtn" class="btn">הבנתי / התחל</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of colors with their Hebrew names and hex codes
+        const colors = [
+            { name: 'אדום', hex: '#FF0000' },
+            { name: 'כחול', hex: '#0000FF' },
+            { name: 'צהוב', hex: '#FFFF00' },
+            { name: 'ירוק', hex: '#00FF00' },
+            { name: 'סגול', hex: '#800080' },
+            { name: 'כתום', hex: '#FFA500' },
+            { name: 'שחור', hex: '#000000' },
+            { name: 'לבן', hex: '#FFFFFF' },
+            { name: 'טורקיז', hex: '#40E0D0' },
+            { name: 'בורדו', hex: '#800000' },
+            { name: 'ורוד', hex: '#FFC0CB' },
+            { name: 'חום', hex: '#A52A2A' },
+            { name: 'אפור', hex: '#808080' },
+            { name: 'זהב', hex: '#FFD700' },
+            { name: 'כסף', hex: '#C0C0C0' },
+            { name: 'אזמרגד', hex: '#50C878' },
+            { name: 'אינדיגו', hex: '#4B0082' },
+            { name: 'שזיף', hex: '#DDA0DD' }
+        ];
+
+        // Global game variables
+        let cards = []; // Stores all card data
+        let flippedCards = []; // Stores currently flipped cards (max 2)
+        let matchedPairs = 0; // Count of matched pairs
+        let score = 0; // Player score
+        let timer = 0; // Game timer
+        let timerInterval; // Interval ID for the timer
+        let gameStarted = false; // Flag to indicate if the game has started
+        let awaitingEndOfMove = false; // Flag to prevent multiple clicks during flip back animation
+
+        // DOM elements
+        const gameBoard = document.getElementById('gameBoard');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const resetGameBtn = document.getElementById('resetGameBtn');
+        const messageModal = document.getElementById('messageModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        /**
+         * Shuffles an array randomly.
+         * @param {Array} array - The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+            return array;
+        }
+
+        /**
+         * Initializes the game board by creating and rendering cards.
+         */
+        function initializeGame() {
+            // Create a duplicate set of cards: one for color, one for text
+            const gameCards = [];
+            colors.forEach(color => {
+                // Color card
+                gameCards.push({
+                    id: color.name, // Use name as ID for matching
+                    type: 'color',
+                    value: color.hex,
+                    isFlipped: false,
+                    isMatched: false
+                });
+                // Text card
+                gameCards.push({
+                    id: color.name, // Use name as ID for matching
+                    type: 'text',
+                    value: color.name,
+                    isFlipped: false,
+                    isMatched: false
+                });
+            });
+
+            // Shuffle the combined set of cards
+            cards = shuffleArray(gameCards);
+            renderCards();
+            resetGameState(); // Reset score, timer etc.
+            hideMessageModal(); // Hide initial instructions
+        }
+
+        /**
+         * Renders the cards on the game board.
+         * Clears existing cards and creates new HTML elements for each card in the 'cards' array.
+         */
+        function renderCards() {
+            gameBoard.innerHTML = ''; // Clear existing cards
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card', 'rounded-xl', 'cursor-pointer', 'select-none');
+                cardElement.dataset.index = index; // Store original index for game logic
+
+                // Create the inner card structure for flipping effect
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front flex justify-center items-center text-5xl text-white">?</div>
+                        <div class="card-back flex justify-center items-center p-2 text-gray-800 text-lg ${card.type === 'color' ? 'color-card' : ''}" style="${card.type === 'color' ? `background-color: ${card.value};` : ''}">
+                            ${card.type === 'text' ? card.value : ''}
+                        </div>
+                    </div>
+                `;
+
+                // Add event listener for card clicks
+                cardElement.addEventListener('click', () => handleCardClick(cardElement, index));
+
+                // Apply initial flipped/matched states if any (useful for re-rendering)
+                if (card.isFlipped) {
+                    cardElement.classList.add('flipped');
+                }
+                if (card.isMatched) {
+                    cardElement.classList.add('matched');
+                }
+
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        /**
+         * Handles a click on a card.
+         * @param {HTMLElement} clickedCardElement - The HTML element of the clicked card.
+         * @param {number} index - The index of the card in the 'cards' array.
+         */
+        function handleCardClick(clickedCardElement, index) {
+            // If the game hasn't started, or we are awaiting end of move, or card is already flipped/matched, do nothing
+            if (!gameStarted || awaitingEndOfMove || cards[index].isFlipped || cards[index].isMatched) {
+                return;
+            }
+
+            // Flip the card visually and update its state
+            clickedCardElement.classList.add('flipped');
+            cards[index].isFlipped = true;
+            flippedCards.push(cards[index]);
+
+            // If two cards are flipped, check for a match
+            if (flippedCards.length === 2) {
+                awaitingEndOfMove = true; // Prevent further clicks
+                setTimeout(() => {
+                    checkForMatch();
+                }, 1000); // Wait 1 second before checking for match
+            }
+        }
+
+        /**
+         * Checks if the two currently flipped cards form a match.
+         */
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+
+            // Match condition: same 'id' but different 'type' (color vs. text)
+            if (card1.id === card2.id && card1.type !== card2.type) {
+                // It's a match!
+                matchedPairs++;
+                score += 10; // Increase score for a match
+                updateScore();
+
+                // Mark cards as matched and visually keep them flipped
+                card1.isMatched = true;
+                card2.isMatched = true;
+
+                // Find the HTML elements for these matched cards and add 'matched' class
+                document.querySelectorAll('.card').forEach(element => {
+                    const idx = parseInt(element.dataset.index);
+                    if (cards[idx].isMatched) {
+                        element.classList.add('matched');
+                    }
+                });
+
+                if (matchedPairs === colors.length) {
+                    // All pairs found, game over!
+                    endGame();
+                }
+            } else {
+                // Not a match, flip them back
+                score = Math.max(0, score - 2); // Decrease score for a mismatch, but not below 0
+                updateScore();
+
+                // Find the HTML elements and flip them back
+                document.querySelectorAll('.card').forEach(element => {
+                    const idx = parseInt(element.dataset.index);
+                    if ((cards[idx] === card1 || cards[idx] === card2) && !cards[idx].isMatched) {
+                        element.classList.remove('flipped');
+                        cards[idx].isFlipped = false;
+                    }
+                });
+            }
+
+            // Reset flipped cards and allow new clicks
+            flippedCards = [];
+            awaitingEndOfMove = false;
+        }
+
+        /**
+         * Updates the score displayed on the screen.
+         */
+        function updateScore() {
+            scoreDisplay.textContent = score;
+        }
+
+        /**
+         * Starts the game timer.
+         */
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer++;
+                timerDisplay.textContent = timer;
+            }, 1000);
+        }
+
+        /**
+         * Stops the game timer.
+         */
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        /**
+         * Resets all game state variables and updates displays.
+         */
+        function resetGameState() {
+            stopTimer();
+            cards.forEach(card => {
+                card.isFlipped = false;
+                card.isMatched = false;
+            });
+            flippedCards = [];
+            matchedPairs = 0;
+            score = 0;
+            timer = 0;
+            gameStarted = false;
+            awaitingEndOfMove = false;
+            updateScore();
+            timerDisplay.textContent = timer;
+            renderCards(); // Re-render to show all cards face down
+            startGameBtn.classList.remove('hidden');
+            resetGameBtn.classList.add('hidden');
+        }
+
+        /**
+         * Ends the game, stops the timer, and displays a final message.
+         */
+        function endGame() {
+            stopTimer();
+            gameStarted = false;
+            showMessageModal(
+                'כל הכבוד!',
+                `מצאת את כל הזוגות בזמן של ${timer} שניות ובניקוד של ${score}!`,
+                'שחק שוב'
+            );
+            startGameBtn.classList.add('hidden');
+            resetGameBtn.classList.remove('hidden');
+        }
+
+        /**
+         * Shows the message modal with custom content.
+         * @param {string} title - The title for the modal.
+         * @param {string} message - The message content for the modal.
+         * @param {string} buttonText - The text for the modal close button.
+         */
+        function showMessageModal(title, message, buttonText) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalCloseBtn.textContent = buttonText;
+            messageModal.classList.add('show');
+        }
+
+        /**
+         * Hides the message modal.
+         */
+        function hideMessageModal() {
+            messageModal.classList.remove('show');
+        }
+
+        // Event Listeners
+        startGameBtn.addEventListener('click', () => {
+            if (!gameStarted) {
+                initializeGame(); // Setup game cards and reset state
+                startTimer();
+                gameStarted = true;
+                startGameBtn.classList.add('hidden'); // Hide start button
+                resetGameBtn.classList.remove('hidden'); // Show reset button
+            }
+            hideMessageModal(); // Hide modal if it's open (e.g., from initial message)
+        });
+
+        resetGameBtn.addEventListener('click', () => {
+            initializeGame(); // Re-initialize for a new game
+            startGameBtn.classList.remove('hidden');
+            resetGameBtn.classList.add('hidden');
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            hideMessageModal();
+            // If the game hasn't started yet (initial modal), trigger start on close
+            if (!gameStarted && startGameBtn.classList.contains('hidden')) {
+                startGameBtn.click(); // Simulate click on start game button
+            }
+        });
+
+        // Initialize game on window load (show initial instructions)
+        window.onload = () => {
+            // Display initial welcome message when page loads
+            showMessageModal(
+                'ברוך הבא למשחק התאמת צבעים!',
+                'התאימו בין כרטיס הצבע לכרטיס עם שם הצבע בעברית. נסו למצוא את כל הזוגות בזמן הקצר ביותר! לחצו על "הבנתי / התחל" כדי להתחיל.',
+                'הבנתי / התחל'
+            );
+            // Ensure start game button is visible initially for the user to start
+            startGameBtn.classList.remove('hidden');
+            resetGameBtn.classList.add('hidden'); // Hide reset button until game starts
+        };
+    </script>
+</body>
+</html>
