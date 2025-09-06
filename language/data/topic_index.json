@@ -1,23 +1,23 @@
 {
-  "generated_at": "2025-09-06T19:11:12.054855",
+  "generated_at": "2025-09-06T22:22:32.722201",
   "generator_script": "generate_topic_index.py",
   "total_files": 2,
   "files": [
     {
-      "filename": "opposites_pairs.json",
+      "filename": "הפכים_pairs.json",
       "description": "",
       "file_size_bytes": 19316,
-      "last_modified": "2025-09-06T15:42:46.878159",
+      "last_modified": "2025-09-06T22:22:20.187480",
       "total_entries": 220
     },
     {
-      "filename": "synonims_multiple.json",
+      "filename": "מילים_נרדפות_multiple.json",
       "description": "",
-      "file_size_bytes": 16813,
-      "last_modified": "2025-09-06T15:37:59.559345",
+      "file_size_bytes": 16828,
+      "last_modified": "2025-09-06T22:21:59.475079",
       "has_metadata": true,
       "total_entries": 102,
-      "source_file": "synonims.csv"
+      "source_file": "מילים_נרדפות.csv"
     }
   ]
 }
