@@ -54,8 +54,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Placeholder function for starting the game
+    // Start the game with the selected topic
     function startGame(filePath) {
         console.log('Loading game from:', filePath);
+
+        // Initialize the memory game with the selected data file
+        if (typeof MemoryGame !== 'undefined') {
+            MemoryGame.init(filePath);
+        } else {
+            console.error('MemoryGame engine not loaded');
+            alert('שגיאה בטעינת מנוע המשחק');
+        }
     }
 });
