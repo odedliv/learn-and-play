@@ -24,8 +24,6 @@ const MemoryGame = {
      */
     async init(filePath) {
         this.currentFilePath = filePath;
-        console.log('\n=== INITIALIZING MEMORY GAME ===');
-        console.log('Loading data from:', filePath);
 
         try {
             // Load the JSON data
@@ -36,6 +34,10 @@ const MemoryGame = {
 
             const jsonData = await response.json();
 
+            // Extract topic name from file path
+            const fileName = filePath.split('/').pop().replace('.json', '');
+            const topicName = this.formatTopicName(fileName);
+
             // Process the data based on its format
             const gamePairs = this.prepareGameData(jsonData);
 
@@ -43,13 +45,30 @@ const MemoryGame = {
                 throw new Error('No valid data found in the file');
             }
 
-            // Setup the game board
-            this.setupGameBoard(gamePairs);
+            // Setup the game board with topic name
+            this.setupGameBoard(gamePairs, topicName);
 
         } catch (error) {
             console.error('Error initializing game:', error);
             this.showError('שגיאה בטעינת המשחק. נסה שוב.');
         }
+    },
+
+    /**
+     * Format topic name for display
+     * @param {string} fileName - The file name without extension
+     * @returns {string} Formatted topic name
+     */
+    formatTopicName(fileName) {
+        // Common topic name mappings
+        const topicNames = {
+            'הפכים': 'הפכים',
+            'מילים_נרדפות': 'מילים נרדפות',
+            'opposites': 'הפכים',
+            'synonyms': 'מילים נרדפות'
+        };
+
+        return topicNames[fileName] || fileName.replace(/_/g, ' ');
     },
 
     /**
@@ -103,14 +122,8 @@ const MemoryGame = {
                 // Store bidirectional mapping for matching
                 this.synonymPairs[pair[0]] = pair[1];
                 this.synonymPairs[pair[1]] = pair[0];
-                console.log(`Pair ${index + 1}: "${pair[0]}" <-> "${pair[1]}"`);
             }
         });
-
-        console.log('=== GAME SETUP COMPLETE ===');
-        console.log('Total pairs created:', gamePairs.length);
-        console.log('Synonym pairs mapping:', this.synonymPairs);
-        console.log('===========================');
 
         return gamePairs;
     },
@@ -118,17 +131,21 @@ const MemoryGame = {
     /**
      * Setup the game board UI
      * @param {Array} gamePairs - Array of word pairs
+     * @param {string} topicName - Name of the topic for display
      */
-    setupGameBoard(gamePairs) {
-        // Hide the topic selection area
-        const topicArea = document.getElementById('topic-selection-area');
-        if (topicArea) {
-            topicArea.style.display = 'none';
+    setupGameBoard(gamePairs, topicName = '') {
+        // Hide the entire topic selection container (including title)
+        const topicContainer = document.getElementById('topic-selection-container');
+        if (topicContainer) {
+            topicContainer.style.display = 'none';
         }
 
         // Create or get the game container
         if (!this.gameContainer) {
-            this.createGameContainer();
+            this.createGameContainer(topicName);
+        } else {
+            // Update the topic name if container already exists
+            this.updateGameTitle(topicName);
         }
 
         // Show the game container
@@ -143,7 +160,6 @@ const MemoryGame = {
             this.synonymPairs[pair[0]] = pair[1];
             this.synonymPairs[pair[1]] = pair[0];
         });
-        console.log('Synonym pairs repopulated after reset:', this.synonymPairs);
 
         // Create word array (flatten pairs)
         const gameWords = [];
@@ -163,8 +179,9 @@ const MemoryGame = {
 
     /**
      * Create the game container HTML structure
+     * @param {string} topicName - Name of the topic for display
      */
-    createGameContainer() {
+    createGameContainer(topicName = '') {
         // Check if container already exists
         this.gameContainer = document.getElementById('memory-game-container');
         if (this.gameContainer) return;
@@ -174,6 +191,9 @@ const MemoryGame = {
         this.gameContainer.id = 'memory-game-container';
         this.gameContainer.style.display = 'none';
         this.gameContainer.className = 'memory-game-wrapper';
+
+        // Format the title with topic name
+        const gameTitle = topicName ? `משחק זיכרון - ${topicName}` : 'משחק זיכרון';
 
         this.gameContainer.innerHTML = `
             <style>
@@ -329,7 +349,7 @@ const MemoryGame = {
             </style>
 
             <div class="game-header">
-                <h2>משחק זיכרון</h2>
+                <h2 id="game-title">${gameTitle}</h2>
             </div>
 
             <div id="game-board" class="game-board">
@@ -384,12 +404,8 @@ const MemoryGame = {
      * @param {HTMLElement} card - The clicked card element
      */
     handleCardClick(card) {
-        console.log('Card clicked:', card.dataset.word);
-        console.log('Current state - lockBoard:', this.lockBoard, 'flipped:', card.classList.contains('flipped'), 'matched:', card.classList.contains('matched'));
-
         // Prevent clicking if board is locked or card is already flipped or matched
         if (this.lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) {
-            console.log('Click ignored (locked/flipped/matched)');
             return;
         }
 
@@ -397,25 +413,21 @@ const MemoryGame = {
         card.classList.add('flipped');
         const cardBack = card.querySelector('.card-back');
         cardBack.classList.add('active');
-        console.log('Card flipped');
 
         if (!this.firstCard) {
             // First card clicked
             this.firstCard = card;
-            console.log('Set as first card');
             return;
         }
 
         // Prevent clicking the same card twice
         if (this.firstCard === card) {
-            console.log('Same card clicked twice - ignoring');
             return;
         }
 
         // Second card clicked
         this.secondCard = card;
         this.lockBoard = true;
-        console.log('Set as second card, locking board');
 
         // Check for match
         this.checkForMatch();
@@ -428,17 +440,7 @@ const MemoryGame = {
         const word1 = this.firstCard.dataset.word;
         const word2 = this.secondCard.dataset.word;
 
-        console.log('=== CHECKING FOR MATCH ===');
-        console.log('Card 1 word:', word1);
-        console.log('Card 2 word:', word2);
-        console.log('Expected match for', word1, ':', this.synonymPairs[word1]);
-        console.log('Expected match for', word2, ':', this.synonymPairs[word2]);
-
         const isMatch = this.synonymPairs[word1] === word2;
-
-        console.log('Is Match?', isMatch);
-        console.log('Calling:', isMatch ? 'handleMatch()' : 'handleMismatch()');
-        console.log('==========================');
 
         if (isMatch) {
             this.handleMatch();
@@ -451,8 +453,6 @@ const MemoryGame = {
      * Handle matching cards
      */
     handleMatch() {
-        console.log('>>> handleMatch() called');
-
         // Play success sound
         this.playSuccessSound();
 
@@ -460,17 +460,12 @@ const MemoryGame = {
         const card1 = this.firstCard;
         const card2 = this.secondCard;
 
-        console.log('Card 1 classes before:', card1.className);
-        console.log('Card 2 classes before:', card2.className);
-
         // Remove event listeners from matched cards (like memory5.html does)
         if (card1.clickHandler) {
             card1.removeEventListener('click', card1.clickHandler);
-            console.log('Removed click handler from card 1');
         }
         if (card2.clickHandler) {
             card2.removeEventListener('click', card2.clickHandler);
-            console.log('Removed click handler from card 2');
         }
 
         // Get card back elements
@@ -492,17 +487,11 @@ const MemoryGame = {
         card1.classList.add('matched');
         card2.classList.add('matched');
 
-        console.log('Card 1 classes after:', card1.className);
-        console.log('Card 2 classes after:', card2.className);
-        console.log('Card 1 should stay visible (has flipped class):', card1.classList.contains('flipped'));
-        console.log('Card 2 should stay visible (has flipped class):', card2.classList.contains('flipped'));
-
         // Important: Cards keep their 'flipped' class so they remain visible
 
         // Update score
         this.pairsFound++;
         this.updateStatus();
-        console.log('Pairs found:', this.pairsFound, '/', this.totalPairs);
 
         // Check for win
         if (this.pairsFound === this.totalPairs) {
@@ -513,25 +502,14 @@ const MemoryGame = {
 
         // Reset turn (but cards stay flipped and visible)
         this.resetTurn();
-
-        // Final check - cards should still be visible after resetTurn
-        console.log('FINAL CHECK after resetTurn:');
-        console.log('Card 1 still has flipped?', card1.classList.contains('flipped'));
-        console.log('Card 1 still has matched?', card1.classList.contains('matched'));
-        console.log('Card 2 still has flipped?', card2.classList.contains('flipped'));
-        console.log('Card 2 still has matched?', card2.classList.contains('matched'));
-        console.log('>>> handleMatch() complete\n');
     },
 
     /**
      * Handle non-matching cards
      */
     handleMismatch() {
-        console.log('>>> handleMismatch() called');
-
         // Wait before flipping back
         this.unflipTimeoutId = setTimeout(() => {
-            console.log('Flipping cards back (mismatch)');
             this.firstCard.classList.remove('flipped');
             this.secondCard.classList.remove('flipped');
 
@@ -549,7 +527,6 @@ const MemoryGame = {
      * Reset turn state
      */
     resetTurn() {
-        console.log('resetTurn() called - clearing first/second cards and unlocking board');
         this.firstCard = null;
         this.secondCard = null;
         this.lockBoard = false;
@@ -581,6 +558,18 @@ const MemoryGame = {
     },
 
     /**
+     * Update the game title with topic name
+     * @param {string} topicName - Name of the topic for display
+     */
+    updateGameTitle(topicName = '') {
+        const titleElement = document.getElementById('game-title');
+        if (titleElement) {
+            const gameTitle = topicName ? `משחק זיכרון - ${topicName}` : 'משחק זיכרון';
+            titleElement.textContent = gameTitle;
+        }
+    },
+
+    /**
      * Change topic - go back to topic selection
      */
     changeTopic() {
@@ -589,10 +578,10 @@ const MemoryGame = {
             this.gameContainer.style.display = 'none';
         }
 
-        // Show topic selection area
-        const topicArea = document.getElementById('topic-selection-area');
-        if (topicArea) {
-            topicArea.style.display = '';
+        // Show topic selection container (including title)
+        const topicContainer = document.getElementById('topic-selection-container');
+        if (topicContainer) {
+            topicContainer.style.display = '';
         }
 
         // Clear game state
