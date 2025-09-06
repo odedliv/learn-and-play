@@ -32,7 +32,7 @@ def csv_to_json_multiple(csv_file_path, json_file_path=None, min_alternatives=2)
     # Determine output file path
     if json_file_path is None:
         base_name = os.path.splitext(csv_file_path)[0]
-        json_file_path = f"{base_name}_multiple.json"
+        json_file_path = f"{base_name}.json"
 
     synonyms_data = []
     invalid_rows = []

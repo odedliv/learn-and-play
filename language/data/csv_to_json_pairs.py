@@ -31,7 +31,7 @@ def csv_to_json_pairs(csv_file_path, json_file_path=None):
     # Determine output file path
     if json_file_path is None:
         base_name = os.path.splitext(csv_file_path)[0]
-        json_file_path = f"{base_name}_pairs.json"
+        json_file_path = f"{base_name}.json"
 
     pairs_data = []
     invalid_rows = []
