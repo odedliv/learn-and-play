@@ -1,0 +1,946 @@
+{
+  "metadata": {
+    "source_file": "synonims.csv",
+    "total_entries": 102,
+    "minimum_alternatives_required": 2
+  },
+  "statistics": {
+    "min_alternatives": 2,
+    "max_alternatives": 7,
+    "total_alternatives": 311,
+    "alternative_counts": {
+      "2": 37,
+      "3": 31,
+      "4": 29,
+      "5": 3,
+      "6": 1,
+      "7": 1
+    },
+    "average_alternatives": 3.05
+  },
+  "entries": [
+    {
+      "id": 1,
+      "alternatives_count": 4,
+      "alternatives": [
+        "אויב",
+        "שונא",
+        "צר",
+        "קם"
+      ]
+    },
+    {
+      "id": 2,
+      "alternatives_count": 3,
+      "alternatives": [
+        "אור",
+        "נוגה",
+        "זוהר"
+      ]
+    },
+    {
+      "id": 3,
+      "alternatives_count": 4,
+      "alternatives": [
+        "אמתחת",
+        "שק",
+        "תרמיל",
+        "צקלון"
+      ]
+    },
+    {
+      "id": 4,
+      "alternatives_count": 3,
+      "alternatives": [
+        "בושה",
+        "כלימה",
+        "חרפה"
+      ]
+    },
+    {
+      "id": 5,
+      "alternatives_count": 3,
+      "alternatives": [
+        "בית",
+        "מעון",
+        "משכן"
+      ]
+    },
+    {
+      "id": 6,
+      "alternatives_count": 4,
+      "alternatives": [
+        "בכי",
+        "שוועה",
+        "זעקה",
+        "יבבה"
+      ]
+    },
+    {
+      "id": 7,
+      "alternatives_count": 4,
+      "alternatives": [
+        "דרך",
+        "שביל",
+        "נתיב",
+        "אורח"
+      ]
+    },
+    {
+      "id": 8,
+      "alternatives_count": 4,
+      "alternatives": [
+        "הסתכל",
+        "הביט",
+        "חזה",
+        "צפה"
+      ]
+    },
+    {
+      "id": 9,
+      "alternatives_count": 4,
+      "alternatives": [
+        "הלך",
+        "פסע",
+        "צעד",
+        "פעם"
+      ]
+    },
+    {
+      "id": 10,
+      "alternatives_count": 4,
+      "alternatives": [
+        "חבר",
+        "רע",
+        "עמית",
+        "ידיד"
+      ]
+    },
+    {
+      "id": 11,
+      "alternatives_count": 2,
+      "alternatives": [
+        "קיר",
+        "כותל"
+      ]
+    },
+    {
+      "id": 12,
+      "alternatives_count": 3,
+      "alternatives": [
+        "חזק",
+        "איתן",
+        "עז"
+      ]
+    },
+    {
+      "id": 13,
+      "alternatives_count": 3,
+      "alternatives": [
+        "חושך",
+        "אפלה",
+        "עלטה"
+      ]
+    },
+    {
+      "id": 14,
+      "alternatives_count": 3,
+      "alternatives": [
+        "ירח",
+        "לבנה",
+        "סהר"
+      ]
+    },
+    {
+      "id": 15,
+      "alternatives_count": 3,
+      "alternatives": [
+        "ישן",
+        "עתיק",
+        "קדום"
+      ]
+    },
+    {
+      "id": 16,
+      "alternatives_count": 4,
+      "alternatives": [
+        "כעס",
+        "חרון",
+        "זעם",
+        "קצף"
+      ]
+    },
+    {
+      "id": 17,
+      "alternatives_count": 3,
+      "alternatives": [
+        "לאט",
+        "בנחת",
+        "במתינות"
+      ]
+    },
+    {
+      "id": 18,
+      "alternatives_count": 2,
+      "alternatives": [
+        "לחם",
+        "פת"
+      ]
+    },
+    {
+      "id": 19,
+      "alternatives_count": 2,
+      "alternatives": [
+        "מורה",
+        "מלמד"
+      ]
+    },
+    {
+      "id": 20,
+      "alternatives_count": 7,
+      "alternatives": [
+        "מתנה",
+        "שי",
+        "דורון",
+        "תשורה",
+        "מנחה",
+        "מתת",
+        "זבד"
+      ]
+    },
+    {
+      "id": 21,
+      "alternatives_count": 4,
+      "alternatives": [
+        "נאה",
+        "יפה",
+        "נחמד",
+        "בר"
+      ]
+    },
+    {
+      "id": 22,
+      "alternatives_count": 2,
+      "alternatives": [
+        "עבודה",
+        "מלאכה"
+      ]
+    },
+    {
+      "id": 23,
+      "alternatives_count": 3,
+      "alternatives": [
+        "נהר",
+        "נחל",
+        "פלג"
+      ]
+    },
+    {
+      "id": 24,
+      "alternatives_count": 3,
+      "alternatives": [
+        "עולם",
+        "יקום",
+        "תבל"
+      ]
+    },
+    {
+      "id": 25,
+      "alternatives_count": 4,
+      "alternatives": [
+        "עייף",
+        "יגע",
+        "לאה",
+        "יעף"
+      ]
+    },
+    {
+      "id": 26,
+      "alternatives_count": 2,
+      "alternatives": [
+        "עץ",
+        "אילן"
+      ]
+    },
+    {
+      "id": 27,
+      "alternatives_count": 2,
+      "alternatives": [
+        "עשיר",
+        "אמיד"
+      ]
+    },
+    {
+      "id": 28,
+      "alternatives_count": 6,
+      "alternatives": [
+        "פחד",
+        "אימה",
+        "יראה",
+        "חיל",
+        "מגור",
+        "חת"
+      ]
+    },
+    {
+      "id": 29,
+      "alternatives_count": 4,
+      "alternatives": [
+        "צרה",
+        "אסון",
+        "פורענות",
+        "פוקה"
+      ]
+    },
+    {
+      "id": 30,
+      "alternatives_count": 3,
+      "alternatives": [
+        "קבוצה",
+        "חבורה",
+        "להקה"
+      ]
+    },
+    {
+      "id": 31,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שדה",
+        "כרם"
+      ]
+    },
+    {
+      "id": 32,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שמש",
+        "חמה"
+      ]
+    },
+    {
+      "id": 33,
+      "alternatives_count": 4,
+      "alternatives": [
+        "שמח",
+        "עליז",
+        "צוהל",
+        "רן"
+      ]
+    },
+    {
+      "id": 34,
+      "alternatives_count": 2,
+      "alternatives": [
+        "אבא",
+        "אב"
+      ]
+    },
+    {
+      "id": 35,
+      "alternatives_count": 2,
+      "alternatives": [
+        "נכד",
+        "שילש"
+      ]
+    },
+    {
+      "id": 36,
+      "alternatives_count": 4,
+      "alternatives": [
+        "אדמה",
+        "עפר",
+        "קרקע",
+        "רגב"
+      ]
+    },
+    {
+      "id": 37,
+      "alternatives_count": 2,
+      "alternatives": [
+        "אהוב",
+        "דוד"
+      ]
+    },
+    {
+      "id": 38,
+      "alternatives_count": 3,
+      "alternatives": [
+        "אוכל",
+        "מזון",
+        "מאכל"
+      ]
+    },
+    {
+      "id": 39,
+      "alternatives_count": 4,
+      "alternatives": [
+        "אומץ",
+        "גבורה",
+        "עוז",
+        "חיל"
+      ]
+    },
+    {
+      "id": 40,
+      "alternatives_count": 2,
+      "alternatives": [
+        "אונייה",
+        "ספינה"
+      ]
+    },
+    {
+      "id": 41,
+      "alternatives_count": 2,
+      "alternatives": [
+        "אסם",
+        "ממגורה"
+      ]
+    },
+    {
+      "id": 42,
+      "alternatives_count": 4,
+      "alternatives": [
+        "אש",
+        "להבה",
+        "שלהבת",
+        "נור"
+      ]
+    },
+    {
+      "id": 43,
+      "alternatives_count": 3,
+      "alternatives": [
+        "בגד",
+        "לבוש",
+        "כסות"
+      ]
+    },
+    {
+      "id": 44,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שמלה",
+        "שלמה"
+      ]
+    },
+    {
+      "id": 45,
+      "alternatives_count": 2,
+      "alternatives": [
+        "בוקר",
+        "שחר"
+      ]
+    },
+    {
+      "id": 46,
+      "alternatives_count": 3,
+      "alternatives": [
+        "בחור",
+        "עלם",
+        "צעיר"
+      ]
+    },
+    {
+      "id": 47,
+      "alternatives_count": 4,
+      "alternatives": [
+        "בינה",
+        "תבונה",
+        "חוכמה",
+        "דעת"
+      ]
+    },
+    {
+      "id": 48,
+      "alternatives_count": 4,
+      "alternatives": [
+        "בית סוהר",
+        "כלא",
+        "בור",
+        "בית האסורים"
+      ]
+    },
+    {
+      "id": 49,
+      "alternatives_count": 3,
+      "alternatives": [
+        "גנב",
+        "שודד",
+        "ליסטים"
+      ]
+    },
+    {
+      "id": 50,
+      "alternatives_count": 4,
+      "alternatives": [
+        "דיבור",
+        "שיחה",
+        "אמירה",
+        "הגד"
+      ]
+    },
+    {
+      "id": 51,
+      "alternatives_count": 3,
+      "alternatives": [
+        "הצלחה",
+        "שגשוג",
+        "פריחה"
+      ]
+    },
+    {
+      "id": 52,
+      "alternatives_count": 4,
+      "alternatives": [
+        "הרס",
+        "חורבן",
+        "כליה",
+        "שממה"
+      ]
+    },
+    {
+      "id": 53,
+      "alternatives_count": 3,
+      "alternatives": [
+        "זקן",
+        "ישיש",
+        "בא בימים"
+      ]
+    },
+    {
+      "id": 54,
+      "alternatives_count": 3,
+      "alternatives": [
+        "חייל",
+        "לוחם",
+        "איש צבא"
+      ]
+    },
+    {
+      "id": 55,
+      "alternatives_count": 3,
+      "alternatives": [
+        "חיטה",
+        "בר",
+        "דגן"
+      ]
+    },
+    {
+      "id": 56,
+      "alternatives_count": 3,
+      "alternatives": [
+        "חלון",
+        "אשנב",
+        "צוהר"
+      ]
+    },
+    {
+      "id": 57,
+      "alternatives_count": 2,
+      "alternatives": [
+        "מהנה",
+        "נעים"
+      ]
+    },
+    {
+      "id": 58,
+      "alternatives_count": 3,
+      "alternatives": [
+        "משובח",
+        "מצוין",
+        "מעולה"
+      ]
+    },
+    {
+      "id": 59,
+      "alternatives_count": 4,
+      "alternatives": [
+        "טיפש",
+        "כסיל",
+        "אוויל",
+        "שוטה"
+      ]
+    },
+    {
+      "id": 60,
+      "alternatives_count": 2,
+      "alternatives": [
+        "חכם",
+        "נבון"
+      ]
+    },
+    {
+      "id": 61,
+      "alternatives_count": 2,
+      "alternatives": [
+        "משכיל",
+        "איש ספר"
+      ]
+    },
+    {
+      "id": 62,
+      "alternatives_count": 3,
+      "alternatives": [
+        "ים",
+        "מצולה",
+        "תהום"
+      ]
+    },
+    {
+      "id": 63,
+      "alternatives_count": 3,
+      "alternatives": [
+        "תינוק",
+        "עולל",
+        "ינוקא"
+      ]
+    },
+    {
+      "id": 64,
+      "alternatives_count": 2,
+      "alternatives": [
+        "זאטוט",
+        "פעוט"
+      ]
+    },
+    {
+      "id": 65,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שובב",
+        "פוחח"
+      ]
+    },
+    {
+      "id": 66,
+      "alternatives_count": 4,
+      "alternatives": [
+        "כסף",
+        "ממון",
+        "הון",
+        "דמים"
+      ]
+    },
+    {
+      "id": 67,
+      "alternatives_count": 3,
+      "alternatives": [
+        "כתר",
+        "עטרה",
+        "נזר"
+      ]
+    },
+    {
+      "id": 68,
+      "alternatives_count": 4,
+      "alternatives": [
+        "מלחמה",
+        "קרב",
+        "מאבק",
+        "מערכה"
+      ]
+    },
+    {
+      "id": 69,
+      "alternatives_count": 3,
+      "alternatives": [
+        "שליט",
+        "מושל",
+        "נגיד"
+      ]
+    },
+    {
+      "id": 70,
+      "alternatives_count": 5,
+      "alternatives": [
+        "מסכן",
+        "עני",
+        "דל",
+        "אביון",
+        "רש"
+      ]
+    },
+    {
+      "id": 71,
+      "alternatives_count": 4,
+      "alternatives": [
+        "מריבה",
+        "ריב",
+        "קטטה",
+        "מדון"
+      ]
+    },
+    {
+      "id": 72,
+      "alternatives_count": 2,
+      "alternatives": [
+        "משפט",
+        "דין"
+      ]
+    },
+    {
+      "id": 73,
+      "alternatives_count": 2,
+      "alternatives": [
+        "נחש",
+        "שרף"
+      ]
+    },
+    {
+      "id": 74,
+      "alternatives_count": 2,
+      "alternatives": [
+        "סוד",
+        "רז"
+      ]
+    },
+    {
+      "id": 75,
+      "alternatives_count": 3,
+      "alternatives": [
+        "סערה",
+        "סופה",
+        "זלעפה"
+      ]
+    },
+    {
+      "id": 76,
+      "alternatives_count": 3,
+      "alternatives": [
+        "עושר",
+        "נכסים",
+        "רכוש"
+      ]
+    },
+    {
+      "id": 77,
+      "alternatives_count": 4,
+      "alternatives": [
+        "עצב",
+        "יגון",
+        "תוגה",
+        "דאבה"
+      ]
+    },
+    {
+      "id": 78,
+      "alternatives_count": 4,
+      "alternatives": [
+        "ענף",
+        "זרד",
+        "בַּד",
+        "עפי"
+      ]
+    },
+    {
+      "id": 79,
+      "alternatives_count": 3,
+      "alternatives": [
+        "צדיק",
+        "חסיד",
+        "ישר"
+      ]
+    },
+    {
+      "id": 80,
+      "alternatives_count": 3,
+      "alternatives": [
+        "צחוק",
+        "שחוק",
+        "גיחוך"
+      ]
+    },
+    {
+      "id": 81,
+      "alternatives_count": 3,
+      "alternatives": [
+        "קול",
+        "צליל",
+        "הגה"
+      ]
+    },
+    {
+      "id": 82,
+      "alternatives_count": 2,
+      "alternatives": [
+        "זעיר",
+        "קטנטן"
+      ]
+    },
+    {
+      "id": 83,
+      "alternatives_count": 5,
+      "alternatives": [
+        "רשע",
+        "רע",
+        "אכזר",
+        "זד",
+        "מרושע"
+      ]
+    },
+    {
+      "id": 84,
+      "alternatives_count": 4,
+      "alternatives": [
+        "רצון",
+        "חפץ",
+        "מאווים",
+        "חשק"
+      ]
+    },
+    {
+      "id": 85,
+      "alternatives_count": 5,
+      "alternatives": [
+        "שיר",
+        "פזמון",
+        "מִזמור",
+        "רננה",
+        "רון"
+      ]
+    },
+    {
+      "id": 86,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שקר",
+        "כזב"
+      ]
+    },
+    {
+      "id": 87,
+      "alternatives_count": 2,
+      "alternatives": [
+        "מרמה",
+        "הונאה"
+      ]
+    },
+    {
+      "id": 88,
+      "alternatives_count": 2,
+      "alternatives": [
+        "תלמיד",
+        "שוליה"
+      ]
+    },
+    {
+      "id": 89,
+      "alternatives_count": 2,
+      "alternatives": [
+        "כשלון",
+        "דחי"
+      ]
+    },
+    {
+      "id": 90,
+      "alternatives_count": 3,
+      "alternatives": [
+        "תוהו",
+        "בוהו",
+        "כאוס"
+      ]
+    },
+    {
+      "id": 91,
+      "alternatives_count": 4,
+      "alternatives": [
+        "בוקה ומבולקה",
+        "אנדרלמוסיה",
+        "בלגן",
+        "אי-סדר"
+      ]
+    },
+    {
+      "id": 92,
+      "alternatives_count": 4,
+      "alternatives": [
+        "סכין",
+        "פגיון",
+        "מאכלת",
+        "סיקר"
+      ]
+    },
+    {
+      "id": 93,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שנה",
+        "למד"
+      ]
+    },
+    {
+      "id": 94,
+      "alternatives_count": 2,
+      "alternatives": [
+        "מקרא",
+        "תנך"
+      ]
+    },
+    {
+      "id": 95,
+      "alternatives_count": 4,
+      "alternatives": [
+        "עם ישראל",
+        "ישורון",
+        "בית-יעקב",
+        "בני-ברית"
+      ]
+    },
+    {
+      "id": 96,
+      "alternatives_count": 2,
+      "alternatives": [
+        "ירושלים",
+        "ציון"
+      ]
+    },
+    {
+      "id": 97,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שה",
+        "טלה"
+      ]
+    },
+    {
+      "id": 98,
+      "alternatives_count": 2,
+      "alternatives": [
+        "כבשה",
+        "רחל"
+      ]
+    },
+    {
+      "id": 99,
+      "alternatives_count": 2,
+      "alternatives": [
+        "פרה",
+        "לאה"
+      ]
+    },
+    {
+      "id": 100,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שודד",
+        "ליסטים"
+      ]
+    },
+    {
+      "id": 101,
+      "alternatives_count": 2,
+      "alternatives": [
+        "אלוהים",
+        "השכינה"
+      ]
+    },
+    {
+      "id": 102,
+      "alternatives_count": 2,
+      "alternatives": [
+        "שטן",
+        "אשמדאי"
+      ]
+    }
+  ]
+}
