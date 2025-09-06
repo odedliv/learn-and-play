@@ -23,17 +23,12 @@
         body {
             font-family: 'Heebo', sans-serif;
         }
-        .rtl-text {
-            direction: rtl;
-            unicode-bidi: embed;
-        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // Use React, useState, etc., from the global scope after loading the CDN scripts
         const { useState, useEffect, useRef, useCallback } = React;
         const { createRoot } = ReactDOM;
 
@@ -60,22 +55,59 @@
             const [feedbackMessage, setFeedbackMessage] = useState('');
             const [isCorrect, setIsCorrect] = useState(null);
 
-            // Audio references
-            const correctSoundRef = useRef(null);
-            const incorrectSoundRef = useRef(null);
+            // Audio contexts and buffers
+            const audioContext = useRef(null);
 
-            // Initialize audio elements once with robust Base64 audio data
+            // Initialize audio context
             useEffect(() => {
-                correctSoundRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARwAAIAAAACAAAABAAEAIAACAAAEAIAADBAABAAgAAABJREEgQmFzZTY0IEV4YW1wbGUgQXVkaW8AAAAXoBAAAAEqAAA/oAAADJAAAFJAAAASAAACAAAAgAAABoAAAAgAAAAAAAAABAAIAAgAAAAIAACAAAAAA');
-                incorrectSoundRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARwAAIAAAACAAAABAAEAIAACAAAEAIAADBAABAAgAAABJREEgQmFzZTY0IEV4YW1wbGUgQXVkaW8AAAAXoBAAAAEqAAA/oAAADJAAAFJAAAASAAACAAAAgAAABoAAAAgAAAAAAAAABAAIAAgAAAAIAACAAAAAA');
+                try {
+                    audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.error("Web Audio API is not supported in this browser:", e);
+                }
             }, []);
 
-            const playSound = useCallback((type) => {
-                if (type === 'correct' && correctSoundRef.current) {
-                    correctSoundRef.current.play().catch(e => console.error("Error playing correct sound:", e));
-                } else if (type === 'incorrect' && incorrectSoundRef.current) {
-                    incorrectSoundRef.current.play().catch(e => console.error("Error playing incorrect sound:", e));
-                }
+            // Function to play a sequence of notes for a correct answer
+            const playCorrectSound = useCallback(() => {
+                if (!audioContext.current) return;
+                
+                const notes = [
+                    { frequency: 392, duration: 0.2 }, // G4 (Sol)
+                    { frequency: 330, duration: 0.1 }, // E4 (Mi)
+                    { frequency: 262, duration: 0.1 }, // C4 (Do)
+                    { frequency: 523, duration: 0.1 }  // C5 (High Do)
+                ];
+
+                let time = audioContext.current.currentTime;
+                notes.forEach(note => {
+                    const oscillator = audioContext.current.createOscillator();
+                    const gainNode = audioContext.current.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.current.destination);
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = note.frequency;
+
+                    // Simple ADSR envelope
+                    gainNode.gain.setValueAtTime(0, time);
+                    gainNode.gain.linearRampToValueAtTime(0.5, time + 0.05); // Attack
+                    gainNode.gain.linearRampToValueAtTime(0.3, time + note.duration - 0.1); // Decay
+                    gainNode.gain.linearRampToValueAtTime(0, time + note.duration); // Release
+
+                    oscillator.start(time);
+                    oscillator.stop(time + note.duration);
+
+                    time += note.duration + 0.05; // Add a small pause between notes
+                });
+            }, []);
+
+            // Function to play a "wood tap" sound for an incorrect answer
+            const playIncorrectSound = useCallback(() => {
+                // This is a valid Base64 encoded WAV file for a simple tap/click sound.
+                const incorrectSoundBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARgAAIAAAACAAAACsAAAByAAAAAEACABAAAAAAAAAgAIAQACABQAAAEACABAAAAABAAIAAAAABAAEAIAAAAEABAAEAAAAAByAAA//w=';
+                const incorrectSound = new Audio(incorrectSoundBase64);
+                incorrectSound.play().catch(e => console.error("Error playing incorrect sound:", e));
             }, []);
 
             // Function to generate a new problem
@@ -117,7 +149,6 @@
 
             // Function to handle settings submission
             const handleSetRanges = () => {
-                // Basic validation for ranges
                 if (minDividend < 1 || maxDividend < 1 || minDivisor < 1 || maxDivisor < 1) {
                     setFeedbackMessage("כל הטווחים חייבים להיות מספרים חיוביים.");
                     return;
@@ -150,18 +181,18 @@
                 if (isNaN(enteredQuotient) || isNaN(enteredRemainder)) {
                     setFeedbackMessage("אנא הכנס מספרים למנה ולשארית.");
                     setIsCorrect(false);
-                    playSound('incorrect');
+                    playIncorrectSound();
                     return;
                 }
 
                 if (enteredQuotient === correctQuotient && enteredRemainder === correctRemainder) {
                     setFeedbackMessage("כל הכבוד! תשובה נכונה!");
                     setIsCorrect(true);
-                    playSound('correct');
+                    playCorrectSound();
                 } else {
                     setFeedbackMessage(`טעות. התשובה הנכונה היא: מנה ${correctQuotient}, שארית ${correctRemainder}.`);
                     setIsCorrect(false);
-                    playSound('incorrect');
+                    playIncorrectSound();
                 }
             };
 
@@ -256,27 +287,15 @@
                             /* Child Practice Section */
                             <div className="space-y-6 text-center">
                                 <h2 className="text-3xl font-bold text-gray-700 mb-4">בוא נפתור!</h2>
-                                <div className="text-5xl font-extrabold text-blue-600 mb-6 rtl-text">
+                                <div className="text-5xl font-extrabold text-blue-600 mb-6 flex justify-center space-x-2" dir="ltr">
                                     <span className="text-gray-800">{dividend}</span>
-                                    <span className="mx-4 text-gray-500">÷</span>
+                                    <span className="text-gray-500">÷</span>
                                     <span className="text-gray-800">{divisor}</span>
-                                    <span className="mx-4 text-gray-500">= ?</span>
+                                    <span className="text-gray-500">=</span>
+                                    <span className="text-gray-500">?</span>
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row sm:space-x-4 sm:space-x-reverse justify-center items-center space-y-4 sm:space-y-0">
-                                    <div className="flex-1 max-w-[150px] w-full">
-                                        <label htmlFor="userQuotient" className="block text-gray-700 text-sm font-medium mb-2">
-                                            מנה:
-                                        </label>
-                                        <input
-                                            type="number"
-                                            id="userQuotient"
-                                            value={userQuotient}
-                                            onChange={(e) => setUserQuotient(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
-                                            inputMode="numeric"
-                                        />
-                                    </div>
                                     <div className="flex-1 max-w-[150px] w-full">
                                         <label htmlFor="userRemainder" className="block text-gray-700 text-sm font-medium mb-2">
                                             שארית:
@@ -286,6 +305,19 @@
                                             id="userRemainder"
                                             value={userRemainder}
                                             onChange={(e) => setUserRemainder(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
+                                            inputMode="numeric"
+                                        />
+                                    </div>
+                                    <div className="flex-1 max-w-[150px] w-full">
+                                        <label htmlFor="userQuotient" className="block text-gray-700 text-sm font-medium mb-2">
+                                            מנה:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="userQuotient"
+                                            value={userQuotient}
+                                            onChange={(e) => setUserQuotient(e.target.value)}
                                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-center text-lg"
                                             inputMode="numeric"
                                         />
