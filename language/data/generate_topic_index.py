@@ -18,6 +18,8 @@ from pathlib import Path
 def generate_topic_index():
     """
     Generate a topic_index.json file from all JSON files in the current directory.
+    Note: This completely rewrites the topic_index.json file from scratch.
+    Any existing content will be replaced.
     """
 
     # Get the directory where this script is located
@@ -25,6 +27,11 @@ def generate_topic_index():
 
     # List to store file information
     topic_files = []
+
+    # Check if topic_index.json already exists
+    output_path = script_dir / 'topic_index.json'
+    if output_path.exists():
+        print("Note: Existing topic_index.json will be completely replaced.")
 
     # Find all JSON files in the current directory
     json_files = sorted([f for f in os.listdir(script_dir)
@@ -86,12 +93,11 @@ def generate_topic_index():
         "files": topic_files
     }
 
-    # Write the topic_index.json file
-    output_path = script_dir / 'topic_index.json'
+    # Write the topic_index.json file (completely overwrites any existing file)
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(topic_index, f, ensure_ascii=False, indent=2)
 
-    print(f"\nSuccessfully created topic_index.json with {len(topic_files)} files")
+    print(f"\nSuccessfully regenerated topic_index.json with {len(topic_files)} files")
     print(f"Output saved to: {output_path}")
 
     # Print summary
