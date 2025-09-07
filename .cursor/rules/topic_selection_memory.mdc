@@ -1,0 +1,34 @@
+**Objective:** Create the skeleton of the memory game application.
+
+**Instructions:**
+
+I am building a basic web application inside a project folder named `language/`. Please create two files inside the `language/` folder:
+
+1. An **`memory_game.html`** file
+2. An **`topic_list.js`** file
+
+**Inside `memory_game.html`:**
+
+* Create a basic HTML5 structure.
+* Link `topic_list.js` using a `<script>` tag at the end of the `<body>` (make sure to use the `defer` attribute).
+* Inside the `<body>`, add an `<h1>` main heading with the text "**בחר נושא לתרגול**".
+* Below the heading, create an empty `<div>` element and give it a unique ID: `id="topic-selection-area"`.
+
+**Inside `topic_list.js`:**
+
+Write the JavaScript logic to dynamically populate the topic selection area.
+
+1. Add an Event Listener to wait for the `DOMContentLoaded` event before running any code.
+2. Inside this listener, write an async function named `loadTopics`. Call this function immediately.
+3. Inside `loadTopics`, define a variable for the path to the index file. Since the HTML and JS are in the `language/` folder, the relative path to the index file is: `const indexPath = './data/topic_index.json'`.
+4. Use `fetch` to load the `indexPath`.
+5. Get the response, perform an `await response.json()` to parse the data, and handle potential errors (e.g., using `try...catch`).
+6. After receiving the JSON data, access the `data.files` array (where `data` is the parsed object).
+7. Retrieve the `<div>` we created in the HTML (using `document.getElementById('topic-selection-area')`).
+8. For **each object** (`file`) within the `data.files` array:
+   * Create a new `<button>` element.
+   * Set the button's text to display useful information, for example: use `file.filename` (perhaps clean the `.json` suffix) and add the number of entries: `file.total_entries`. (Example: "opposites\_pairs (220 **ערכים**)")
+   * **(This is the critical part):** Store the full path to the relevant data file as a `data-attribute`. The path must include the folder prefix: `button.dataset.filePath = \`./data/${file.filename}\`;\`
+   * Append the new button as a child to the `topic-selection-area`.
+9. Create a placeholder function named `startGame(filePath)` that currently only prints the path it received to the console: `console.log('Loading game from:', filePath);`
+10. Add an Event Listener to every button created: on a 'click' event, the button should call the `startGame` function and pass it the full file path that we stored in its `button.dataset.filePath`.
