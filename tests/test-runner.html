@@ -95,10 +95,10 @@
 
     <div class="test-section">
         <h2>Test Controls</h2>
-        <button onclick="runAllTests()">▶️ Run All Tests</button>
-        <button onclick="runUnitTests()">🔧 Run Unit Tests</button>
-        <button onclick="runIntegrationTests()">🔗 Run Integration Tests</button>
-        <button onclick="clearResults()">🗑️ Clear Results</button>
+        <button id="run-all-tests">▶️ Run All Tests</button>
+        <button id="run-unit-tests">🔧 Run Unit Tests</button>
+        <button id="run-integration-tests">🔗 Run Integration Tests</button>
+        <button id="clear-results">🗑️ Clear Results</button>
     </div>
 
     <div id="test-summary"></div>
@@ -294,96 +294,133 @@
 
             // Import and run test modules
             try {
-                // Example test - shuffleArray
-                describe('Array Utilities', () => {
-                    it('should maintain array length when shuffling', () => {
-                        // Inline implementation for testing
-                        const shuffleArray = (array) => {
-                            const arr = [...array];
-                            for (let i = arr.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [arr[i], arr[j]] = [arr[j], arr[i]];
-                            }
-                            return arr;
-                        };
+                // First, try to load the actual test file
+                const testScript = document.createElement('script');
+                testScript.src = '/tests/unit/memory-game.test.js';
 
-                        const input = [1, 2, 3, 4, 5];
-                        const result = shuffleArray(input);
+                // Wait for the script to load
+                await new Promise((resolve, reject) => {
+                    testScript.onload = async () => {
+                        console.log('Test file loaded successfully');
 
-                        expect(result.length).toBe(5);
-                        expect(result).toContain(1);
-                        expect(result).toContain(5);
-                    });
+                        // Wait a moment for the script to fully execute
+                        setTimeout(() => {
+                            // Try to run the exported test function if available
+                            if (typeof window.runMemoryGameTests === 'function') {
+                                console.log('Running memory game tests from external file...');
+                                window.runMemoryGameTests();
+                                // Display results after running tests
+                                window.testFramework.displayResults();
+                                resolve();
+                            } else {
+                                console.log('runMemoryGameTests not found, running inline example tests...');
 
-                    it('should not modify original array', () => {
-                        const shuffleArray = (array) => {
-                            const arr = [...array];
-                            for (let i = arr.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [arr[i], arr[j]] = [arr[j], arr[i]];
-                            }
-                            return arr;
-                        };
+                            // Example test - shuffleArray
+                            describe('Array Utilities', () => {
+                                it('should maintain array length when shuffling', () => {
+                                    // Inline implementation for testing
+                                    const shuffleArray = (array) => {
+                                        const arr = [...array];
+                                        for (let i = arr.length - 1; i > 0; i--) {
+                                            const j = Math.floor(Math.random() * (i + 1));
+                                            [arr[i], arr[j]] = [arr[j], arr[i]];
+                                        }
+                                        return arr;
+                                    };
 
-                        const input = [1, 2, 3];
-                        const original = [...input];
-                        shuffleArray(input);
+                                    const input = [1, 2, 3, 4, 5];
+                                    const result = shuffleArray(input);
 
-                        expect(input).toEqual(original);
-                    });
+                                    expect(result.length).toBe(5);
+                                    expect(result).toContain(1);
+                                    expect(result).toContain(5);
+                                });
+
+                                it('should not modify original array', () => {
+                                    const shuffleArray = (array) => {
+                                        const arr = [...array];
+                                        for (let i = arr.length - 1; i > 0; i--) {
+                                            const j = Math.floor(Math.random() * (i + 1));
+                                            [arr[i], arr[j]] = [arr[j], arr[i]];
+                                        }
+                                        return arr;
+                                    };
+
+                                    const input = [1, 2, 3];
+                                    const original = [...input];
+                                    shuffleArray(input);
+
+                                    expect(input).toEqual(original);
+                                });
+                            });
+
+                            describe('Game State', () => {
+                                it('should initialize with default values', () => {
+                                    const gameState = {
+                                        score: 0,
+                                        pairsFound: 0,
+                                        totalPairs: 10,
+                                        isLocked: false
+                                    };
+
+                                    expect(gameState.score).toBe(0);
+                                    expect(gameState.totalPairs).toBe(10);
+                                    expect(gameState.isLocked).toBeFalsy();
+                                });
+
+                                it('should detect win condition', () => {
+                                    const checkWin = (pairsFound, totalPairs) => {
+                                        return pairsFound === totalPairs;
+                                    };
+
+                                    expect(checkWin(10, 10)).toBeTruthy();
+                                    expect(checkWin(9, 10)).toBeFalsy();
+                                });
+                            });
+
+                            describe('Data Validation', () => {
+                                it('should validate topic data structure', () => {
+                                    const isValidTopic = (data) => {
+                                        return data &&
+                                               (Array.isArray(data.entries) || Array.isArray(data.pairs));
+                                    };
+
+                                    expect(isValidTopic({ entries: [] })).toBeTruthy();
+                                    expect(isValidTopic({ pairs: [] })).toBeTruthy();
+                                    expect(isValidTopic({})).toBeFalsy();
+                                    expect(isValidTopic(null)).toBeFalsy();
+                                });
+
+                                it('should validate card count', () => {
+                                    const isValidCardCount = (count) => {
+                                        return count > 0 && count % 2 === 0;
+                                    };
+
+                                    expect(isValidCardCount(20)).toBeTruthy();
+                                    expect(isValidCardCount(10)).toBeTruthy();
+                                    expect(isValidCardCount(15)).toBeFalsy();
+                                    expect(isValidCardCount(0)).toBeFalsy();
+                                });
+                            });
+
+                            // Display results
+                            window.testFramework.displayResults();
+                            resolve();
+                        }
+                        }, 100); // Give script 100ms to fully execute
+                    };
+
+                    testScript.onerror = (error) => {
+                        console.error('Error loading test file:', error);
+                        console.log('Running inline tests as fallback');
+                        // Run inline tests as fallback
+                        runInlineTests();
+                        resolve();
+                    };
+
+                    // Append script to document to start loading
+                    document.head.appendChild(testScript);
                 });
-
-                describe('Game State', () => {
-                    it('should initialize with default values', () => {
-                        const gameState = {
-                            score: 0,
-                            pairsFound: 0,
-                            totalPairs: 10,
-                            isLocked: false
-                        };
-
-                        expect(gameState.score).toBe(0);
-                        expect(gameState.totalPairs).toBe(10);
-                        expect(gameState.isLocked).toBeFalsy();
-                    });
-
-                    it('should detect win condition', () => {
-                        const checkWin = (pairsFound, totalPairs) => {
-                            return pairsFound === totalPairs;
-                        };
-
-                        expect(checkWin(10, 10)).toBeTruthy();
-                        expect(checkWin(9, 10)).toBeFalsy();
-                    });
-                });
-
-                describe('Data Validation', () => {
-                    it('should validate topic data structure', () => {
-                        const isValidTopic = (data) => {
-                            return data &&
-                                   (Array.isArray(data.entries) || Array.isArray(data.pairs));
-                        };
-
-                        expect(isValidTopic({ entries: [] })).toBeTruthy();
-                        expect(isValidTopic({ pairs: [] })).toBeTruthy();
-                        expect(isValidTopic({})).toBeFalsy();
-                        expect(isValidTopic(null)).toBeFalsy();
-                    });
-
-                    it('should validate card count', () => {
-                        const isValidCardCount = (count) => {
-                            return count > 0 && count % 2 === 0;
-                        };
-
-                        expect(isValidCardCount(20)).toBeTruthy();
-                        expect(isValidCardCount(10)).toBeTruthy();
-                        expect(isValidCardCount(15)).toBeFalsy();
-                        expect(isValidCardCount(0)).toBeFalsy();
-                    });
-                });
-
-                // Display results
-                window.testFramework.displayResults();
 
             } catch (error) {
                 console.error('Error running tests:', error);
@@ -393,6 +430,100 @@
                     </div>
                 `;
             }
+        };
+
+        // Inline tests as a separate function for fallback
+        window.runInlineTests = function() {
+            console.log('Running inline example tests...');
+
+            // Example test - shuffleArray
+            describe('Array Utilities', () => {
+                it('should maintain array length when shuffling', () => {
+                    const shuffleArray = (array) => {
+                        const arr = [...array];
+                        for (let i = arr.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [arr[i], arr[j]] = [arr[j], arr[i]];
+                        }
+                        return arr;
+                    };
+
+                    const input = [1, 2, 3, 4, 5];
+                    const result = shuffleArray(input);
+
+                    expect(result.length).toBe(5);
+                    expect(result).toContain(1);
+                    expect(result).toContain(5);
+                });
+
+                it('should not modify original array', () => {
+                    const shuffleArray = (array) => {
+                        const arr = [...array];
+                        for (let i = arr.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [arr[i], arr[j]] = [arr[j], arr[i]];
+                        }
+                        return arr;
+                    };
+
+                    const input = [1, 2, 3];
+                    const original = [...input];
+                    shuffleArray(input);
+
+                    expect(input).toEqual(original);
+                });
+            });
+
+            describe('Game State', () => {
+                it('should initialize with default values', () => {
+                    const gameState = {
+                        score: 0,
+                        pairsFound: 0,
+                        totalPairs: 10,
+                        isLocked: false
+                    };
+
+                    expect(gameState.score).toBe(0);
+                    expect(gameState.totalPairs).toBe(10);
+                    expect(gameState.isLocked).toBeFalsy();
+                });
+
+                it('should detect win condition', () => {
+                    const checkWin = (pairsFound, totalPairs) => {
+                        return pairsFound === totalPairs;
+                    };
+
+                    expect(checkWin(10, 10)).toBeTruthy();
+                    expect(checkWin(9, 10)).toBeFalsy();
+                });
+            });
+
+            describe('Data Validation', () => {
+                it('should validate topic data structure', () => {
+                    const isValidTopic = (data) => {
+                        return data &&
+                               (Array.isArray(data.entries) || Array.isArray(data.pairs));
+                    };
+
+                    expect(isValidTopic({ entries: [] })).toBeTruthy();
+                    expect(isValidTopic({ pairs: [] })).toBeTruthy();
+                    expect(isValidTopic({})).toBeFalsy();
+                    expect(isValidTopic(null)).toBeFalsy();
+                });
+
+                it('should validate card count', () => {
+                    const isValidCardCount = (count) => {
+                        return count > 0 && count % 2 === 0;
+                    };
+
+                    expect(isValidCardCount(20)).toBeTruthy();
+                    expect(isValidCardCount(10)).toBeTruthy();
+                    expect(isValidCardCount(15)).toBeFalsy();
+                    expect(isValidCardCount(0)).toBeFalsy();
+                });
+            });
+
+            window.testFramework.displayResults();
         };
 
         window.runUnitTests = function() {
@@ -411,6 +542,34 @@
             document.getElementById('test-results').innerHTML = '<div class="loading">Click "Run All Tests" to begin...</div>';
             document.getElementById('test-summary').innerHTML = '';
         };
+
+        // Add event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test runner ready!');
+
+            // Connect button click handlers
+            document.getElementById('run-all-tests').addEventListener('click', function() {
+                console.log('Run All Tests clicked');
+                window.runAllTests();
+            });
+
+            document.getElementById('run-unit-tests').addEventListener('click', function() {
+                console.log('Run Unit Tests clicked');
+                window.runUnitTests();
+            });
+
+            document.getElementById('run-integration-tests').addEventListener('click', function() {
+                console.log('Run Integration Tests clicked');
+                window.runIntegrationTests();
+            });
+
+            document.getElementById('clear-results').addEventListener('click', function() {
+                console.log('Clear Results clicked');
+                window.clearResults();
+            });
+
+            console.log('Button event listeners attached');
+        });
     </script>
 </body>
 </html>

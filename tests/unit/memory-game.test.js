@@ -5,7 +5,8 @@
  * To run: Include this file in test-runner.html
  */
 
-export function runMemoryGameTests() {
+// Make function available globally for the test runner
+window.runMemoryGameTests = function() {
     describe('Memory Game - Shuffle Function', () => {
         // Import or reference the actual function from memory_game_engine.js
         // For now, we'll test against a copy of the implementation
@@ -252,7 +253,7 @@ export function runMemoryGameTests() {
     });
 }
 
-// Export for use in test runner
+// Also export for module systems if available
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { runMemoryGameTests };
+    module.exports = { runMemoryGameTests: window.runMemoryGameTests };
 }
