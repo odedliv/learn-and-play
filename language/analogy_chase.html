@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרדף האנלוגיות</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            touch-action: manipulation;
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        }
+        #track-container {
+             background: rgba(255,255,255,0.1);
+             backdrop-filter: blur(10px);
+        }
+        #track {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+            padding: 10px;
+        }
+        .step {
+            width: 4.5%;
+            height: 60px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1e3a8a;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .step.finish {
+            background: #FFD700;
+            color: #422006;
+            box-shadow: 0 0 20px #FFD700;
+            font-size: 2rem;
+        }
+        .player, .chaser {
+            position: absolute;
+            bottom: -25px;
+            font-size: 2.8rem;
+            transition: right 0.5s cubic-bezier(0.45, 0, 0.55, 1);
+            filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.3));
+        }
+
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+        .timer-circle-progress {
+            transition: stroke-dashoffset 0.2s linear;
+        }
+        .answer-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .answer-btn:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .correct {
+            animation: correct-pulse 0.5s ease;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+        }
+        .incorrect {
+            animation: incorrect-shake 0.5s ease;
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
+        }
+        .main-title {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #FFD700; /* Gold color */
+        }
+
+        @keyframes correct-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes incorrect-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="w-full max-w-4xl mx-auto">
+        <h1 class="main-title text-4xl sm:text-5xl font-bold text-center mb-4">🏃‍♂️ מרדף האנלוגיות 🌀</h1>
+
+        <!-- מסלול המרדף -->
+        <div id="track-container" class="p-4 rounded-2xl shadow-lg mb-4">
+            <div id="track">
+                <!-- המדרגות יווצרו דינמית -->
+            </div>
+        </div>
+
+        <!-- אזור המשחק המרכזי -->
+        <div class="bg-white p-6 rounded-2xl shadow-xl text-center">
+
+             <!-- Stats Display -->
+            <div class="flex justify-around text-center mb-4 pb-4 border-b">
+                <div>
+                    <div id="player-pos-stat" class="font-bold text-2xl text-sky-600">5</div>
+                    <div class="text-sm text-gray-500">מיקום השחקן</div>
+                </div>
+                <div>
+                    <div id="chaser-pos-stat" class="font-bold text-2xl text-red-500">0</div>
+                    <div class="text-sm text-gray-500">מיקום הרודף</div>
+                </div>
+                <div>
+                     <div id="hints-left-stat" class="font-bold text-2xl text-amber-500">5</div>
+                    <div class="text-sm text-gray-500">רמזים</div>
+                </div>
+            </div>
+
+            <!-- HUD: זמן ורמזים -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="relative w-20 h-20">
+                    <svg id="timer-svg" class="timer-svg w-full h-full" viewBox="0 0 36 36">
+                        <path class="text-gray-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.8"></path>
+                        <path id="timer-circle" class="timer-circle-progress text-sky-500" stroke-width="3.8" stroke-dasharray="100, 100" stroke-dashoffset="0" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                    </svg>
+                    <span id="time-display" class="absolute inset-0 flex items-center justify-center text-2xl font-bold"></span>
+                </div>
+
+                <button id="hint-btn" class="bg-amber-400 text-white font-bold py-2 px-5 rounded-full shadow-md hover:bg-amber-500 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    💡 רמז (<span id="hints-left"></span>)
+                </button>
+            </div>
+
+            <div id="hint-display" class="h-8 text-lg font-semibold text-violet-600 mb-2"></div>
+
+            <!-- אזור השאלה -->
+            <div id="question-area" class="mb-6 text-2xl sm:text-3xl">
+                <p>
+                    <span id="itemA" class="font-bold text-amber-600"></span>
+                    מתייחס ל-
+                    <span id="itemB" class="font-bold text-amber-600"></span>
+                </p>
+                <p class="mt-2">
+                    כמו ש-
+                    <span id="itemC" class="font-bold text-sky-600"></span>
+                    מתייחס/ת ל...
+                </p>
+            </div>
+            <div id="answers-area" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- כפתורי התשובות -->
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל סיום משחק -->
+    <div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center transform transition-all scale-95 max-w-sm w-full" id="modal-content">
+            <div id="modal-icon" class="text-8xl mb-4"></div>
+            <h2 id="modal-title" class="text-4xl font-bold mb-4"></h2>
+            <p id="modal-text" class="text-lg text-gray-600 mb-6"></p>
+            <div class="text-left space-y-2 mb-8 bg-gray-100 p-4 rounded-lg">
+                <p class="text-lg">📊 <span class="font-bold">מרחק מהרודף:</span> <span id="distance-stat"></span> מדרגות</p>
+                <p class="text-lg">💡 <span class="font-bold">רמזים שנותרו:</span> <span id="hints-stat"></span></p>
+            </div>
+            <button id="play-again-btn" class="bg-sky-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-sky-600 transition-colors w-full">שחק שוב</button>
+        </div>
+    </div>
+
+    <script>
+        // --- פרמטרים לכוונון ---
+        const PLAYER_START_POSITION = 5;
+        const TIME_PER_QUESTION = 20;
+        const TOTAL_HINTS = 5;
+        const FINISH_LINE = 20;
+        const HINT_TIME_BONUS = 10;
+
+        // --- אלמנטים מה-DOM ---
+        const playerEl = document.createElement('div');
+        playerEl.id = 'player';
+        playerEl.className = 'player';
+        playerEl.textContent = '🏃‍♂️';
+
+        const chaserEl = document.createElement('div');
+        chaserEl.id = 'chaser';
+        chaserEl.className = 'chaser';
+        chaserEl.textContent = '🌀';
+
+        const trackEl = document.getElementById('track');
+        const timeDisplay = document.getElementById('time-display');
+        const timerCircle = document.getElementById('timer-circle');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintsLeftEl = document.getElementById('hints-left');
+        const hintDisplay = document.getElementById('hint-display');
+        const answersArea = document.getElementById('answers-area');
+        const itemAEl = document.getElementById('itemA');
+        const itemBEl = document.getElementById('itemB');
+        const itemCEl = document.getElementById('itemC');
+        const playerPosStat = document.getElementById('player-pos-stat');
+        const chaserPosStat = document.getElementById('chaser-pos-stat');
+        const hintsLeftStat = document.getElementById('hints-left-stat');
+
+        // Modal elements
+        const gameOverModal = document.getElementById('game-over-modal');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        const distanceStat = document.getElementById('distance-stat');
+        const hintsStat = document.getElementById('hints-stat');
+        const playAgainBtn = document.getElementById('play-again-btn');
+
+        // --- משתני מצב המשחק ---
+        let playerPosition, chaserPosition, hintsLeft, timeLeft, timerInterval;
+        let currentCorrectAnswer = '';
+        let analogyPool = [];
+        let currentAnalogyIndex = 0;
+
+        // --- נתוני המשחק (מוטמע) ---
+        const analogiesData = [
+          {"relationCategory":"ראשון ואחרון (בסדרה)","pairs":[{"itemA":"יורה","itemB":"מלקוש","distractorsA":["אביב","קיץ","סתיו","גשם"],"distractorsB":["גשם","חורף","ענן","ברד"]},{"itemA":"בכור","itemB":"בן זקונים","distractorsA":["תינוק","ילד","נכד","אחיין"],"distractorsB":["אח","נכד","הורה","תאום"]},{"itemA":"א'","itemB":"ת'","distractorsA":["ב'","ג'","מילה","אות"],"distractorsB":["ש'","סוף","א-ב","אות"]}]},
+          {"relationCategory":"נייד מול נייח","pairs":[{"itemA":"סולם","itemB":"מדרגות","distractorsA":["מעקה","חבל","כיסא","מדרכה"],"distractorsB":["מעלית","דרגנוע","רמפה","חבל"]},{"itemA":"אוהל","itemB":"בית","distractorsA":["קרוואן","סוכה","בקתה","צריף"],"distractorsB":["צריף","קרוואן","גג","מחנה"]},{"itemA":"מחשב נייד","itemB":"מחשב שולחני","distractorsA":["טלפון","טאבלט","מסך","עכבר"],"distractorsB":["טלוויזיה","שולחן","מקלדת","חשמל"]}]},
+          {"relationCategory":"הספק נמוך מול גבוה","pairs":[{"itemA":"מעדר","itemB":"דחפור","distractorsA":["את חפירה","מגרפה","טוריה","כף"],"distractorsB":["טרקטור","מריצה","מגרפה","משאית"]},{"itemA":"חכה","itemB":"רשת דייגים","distractorsA":["סירה","קרס","ספינת דיג","פיתיון"],"distractorsB":["סירה","פיתיון","דג","קרס"]},{"itemA":"מטאטא","itemB":"שואב אבק","distractorsA":["יעה","סמרטוט","מגב","אבק"],"distractorsB":["חשמל","רעש","שטיח","לכלוך"]}]},
+          {"relationCategory":"תכונה ויחידת מידה","pairs":[{"itemA":"אורך","itemB":"סנטימטר","distractorsA":["רוחב","עומק","גובה","מרחק"],"distractorsB":["מטר","אינץ'","סרגל","קילומטר"]},{"itemA":"משקל","itemB":"גרם","distractorsA":["נפח","טמפרטורה","מהירות","זמן"],"distractorsB":["מאזניים","כבד","ליטר","מטר"]},{"itemA":"זמן","itemB":"שנייה","distractorsA":["שעון","מהירות","אורך","דקה"],"distractorsB":["דקה","שעה","שעון","מהר"]},{"itemA":"טמפרטורה","itemB":"מעלה","distractorsA":["חום","קור","מדחום","מזג אוויר"],"distractorsB":["אחוז","קילומטר","גרם","חום"]}]},
+          {"relationCategory":"בעל מקצוע והתוצר","pairs":[{"itemA":"טבח","itemB":"מזון","distractorsA":["אופה","קונדיטור","מלצר","חקלאי"],"distractorsB":["ארוחה","מסעדה","סיר","מטבח"]},{"itemA":"צורף","itemB":"תכשיט","distractorsA":["תכשיטן","יהלומן","נפח","חנות"],"distractorsB":["זהב","כסף","טבעת","אופה"]},{"itemA":"אופה","itemB":"מאפה","distractorsA":["טבח","קונדיטור","קמח","מוכר"],"distractorsB":["לחם","עוגה","קמח","תנור"]}]},
+          {"relationCategory":"המצאה וממציא","pairs":[{"itemA":"נורה","itemB":"תומס אדיסון","distractorsA":["חשמל","פטיפון","טלגרף","זרם ישר"],"distractorsB":["ניקולה טסלה","בנג'מין פרנקלין","פאראדיי"]},{"itemA":"מטוס","itemB":"האחים רייט","distractorsA":["תעופה","נורה","טלפון","רדיו"],"distractorsB":["א. גרהם בל","איינשטיין","טייס","כנפיים"]},{"itemA":"טלפון","itemB":"א. גרהם בל","distractorsA":["טלוויזיה","רדיו","לדבר","חוט"],"distractorsB":["אדיסון","מרקוני","איינשטיין","לדבר"]}]},
+          {"relationCategory":"הפכים","pairs":[{"itemA":"מתון","itemB":"קיצוני","distractorsA":["רגיל","ממוצע","רדיקלי","שפוי"],"distractorsB":["רגוע","חריף","ממוצע","חזק"]},{"itemA":"רוב","itemB":"מיעוט","distractorsA":["כולם","מעט","נדיר","בודד"],"distractorsB":["הרבה","מעט","חלק","כולם"]},{"itemA":"גבוה","itemB":"נמוך","distractorsA":["ארוך","רחב","שמן","למעלה"],"distractorsB":["קצר","צר","רזה","למטה"]},{"itemA":"שמן","itemB":"רזה","distractorsA":["גדול","רחב","עבה","בריא"],"distractorsB":["דק","צר","קטן","חלש"]}]}
+        ];
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function populateAndShuffleAnalogyPool() {
+            analogyPool = [];
+            analogiesData.forEach(category => {
+                if (category.pairs && category.pairs.length >= 2) {
+                    const shuffledPairs = shuffleArray(category.pairs);
+                    for (let i = 0; i < shuffledPairs.length - 1; i += 2) {
+                        analogyPool.push({
+                            categoryName: category.relationCategory,
+                            pair1: shuffledPairs[i],
+                            pair2: shuffledPairs[i + 1]
+                        });
+                    }
+                }
+            });
+            analogyPool = shuffleArray(analogyPool);
+            currentAnalogyIndex = 0;
+        }
+
+        function createTrack() {
+            trackEl.innerHTML = '';
+            for (let i = 0; i <= FINISH_LINE; i++) {
+                const step = document.createElement('div');
+                step.className = 'step';
+                if (i === FINISH_LINE) {
+                    step.classList.add('finish');
+                    step.innerHTML = '🏆';
+                } else {
+                    step.textContent = i;
+                }
+                trackEl.appendChild(step);
+            }
+            trackEl.appendChild(playerEl);
+            trackEl.appendChild(chaserEl);
+        }
+
+        function resetGame() {
+            playerPosition = PLAYER_START_POSITION;
+            chaserPosition = 0;
+            hintsLeft = TOTAL_HINTS;
+
+            gameOverModal.classList.add('hidden');
+
+            populateAndShuffleAnalogyPool();
+
+            updatePositions();
+            updateStatsDisplay();
+            generateQuestion();
+        }
+
+        function updatePositions() {
+            // This logic calculates the percentage position along the track
+            const playerPercent = (playerPosition / FINISH_LINE) * 100;
+            const chaserPercent = (chaserPosition / FINISH_LINE) * 100;
+
+            // Clamp the value between 0 and 95% to keep icons within bounds
+            playerEl.style.right = `calc(${Math.min(playerPercent, 95)}% - ${playerEl.offsetWidth / 2}px)`;
+            chaserEl.style.right = `calc(${Math.min(chaserPercent, 95)}% - ${chaserEl.offsetWidth / 2}px)`;
+        }
+
+        function updateStatsDisplay() {
+            playerPosStat.textContent = playerPosition;
+            chaserPosStat.textContent = chaserPosition;
+            hintsLeftStat.textContent = hintsLeft;
+            hintsLeftEl.textContent = hintsLeft;
+        }
+
+        function startTimer() {
+            timeLeft = TIME_PER_QUESTION;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    handleAnswer(false);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            timeDisplay.textContent = timeLeft;
+            const progress = (timeLeft / TIME_PER_QUESTION) * 100;
+            timerCircle.style.strokeDashoffset = 100 - progress;
+
+            if(timeLeft <= 5) {
+                timerCircle.classList.remove('text-sky-500');
+                timerCircle.classList.add('text-red-500');
+            } else {
+                timerCircle.classList.remove('text-red-500');
+                timerCircle.classList.add('text-sky-500');
+            }
+        }
+
+        function generateQuestion() {
+            hintDisplay.textContent = '';
+            hintBtn.disabled = (hintsLeft === 0);
+
+            if (currentAnalogyIndex >= analogyPool.length) {
+                showGameOver(true, "כל הכבוד! סיימת את כל השאלות במאגר!");
+                return;
+            }
+
+            const analogy = analogyPool[currentAnalogyIndex];
+            currentAnalogyIndex++;
+
+            let examplePair = analogy.pair1;
+            let questionPair = analogy.pair2;
+            let distractors;
+
+            const shouldReverse = Math.random() < 0.5;
+
+            if (shouldReverse) {
+                itemAEl.textContent = examplePair.itemB;
+                itemBEl.textContent = examplePair.itemA;
+                itemCEl.textContent = questionPair.itemB;
+                currentCorrectAnswer = questionPair.itemA;
+                distractors = questionPair.distractorsA;
+            } else {
+                itemAEl.textContent = examplePair.itemA;
+                itemBEl.textContent = examplePair.itemB;
+                itemCEl.textContent = questionPair.itemA;
+                currentCorrectAnswer = questionPair.itemB;
+                distractors = questionPair.distractorsB;
+            }
+
+            hintBtn.onclick = () => useHint(analogy.categoryName);
+
+            const options = shuffleArray([currentCorrectAnswer, ...shuffleArray(distractors || []).slice(0, 3)]);
+
+            answersArea.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn p-4 rounded-lg shadow-md text-xl font-semibold';
+                button.textContent = option;
+                button.addEventListener('click', (e) => handleAnswer(e.target.textContent === currentCorrectAnswer, e.target));
+                answersArea.appendChild(button);
+            });
+
+            startTimer();
+        }
+
+        function handleAnswer(isCorrect, clickedButton = null) {
+            stopTimer();
+            answersArea.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            hintBtn.onclick = null;
+
+            if (isCorrect) {
+                playerPosition++;
+                chaserPosition++;
+                clickedButton.classList.add('correct');
+            } else {
+                chaserPosition++;
+                if (clickedButton) {
+                    clickedButton.classList.add('incorrect');
+                }
+                answersArea.querySelectorAll('button').forEach(btn => {
+                    if (btn.textContent === currentCorrectAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                updatePositions();
+                updateStatsDisplay();
+                setTimeout(() => {
+                    checkGameEnd();
+                }, 600);
+            }, 500);
+        }
+
+        function checkGameEnd() {
+            if (playerPosition >= FINISH_LINE) {
+                showGameOver(true);
+            } else if (chaserPosition >= playerPosition) {
+                showGameOver(false);
+            } else {
+                generateQuestion();
+            }
+        }
+
+        function useHint(categoryName) {
+            if (hintsLeft > 0) {
+                hintsLeft--;
+                timeLeft = Math.min(TIME_PER_QUESTION, timeLeft + HINT_TIME_BONUS);
+                updateStatsDisplay();
+                updateTimerDisplay();
+                hintDisplay.textContent = `רמז: ${categoryName}`;
+                hintBtn.disabled = true;
+                hintBtn.onclick = null;
+            }
+        }
+
+        function showGameOver(didWin, customMessage = null) {
+            if (didWin) {
+                modalIcon.textContent = '🎉';
+                modalTitle.textContent = 'ניצחת!';
+                modalTitle.className = 'text-4xl font-bold mb-4 text-green-500';
+                modalText.textContent = customMessage || 'ברחת מהרודף והגעת אל הגביע!';
+            } else {
+                modalIcon.textContent = '🌀';
+                modalTitle.textContent = 'הפסדת...';
+                modalTitle.className = 'text-4xl font-bold mb-4 text-red-500';
+                modalText.textContent = 'הרודף השיג אותך. נסה שוב!';
+            }
+            distanceStat.textContent = Math.max(0, playerPosition - chaserPosition);
+            hintsStat.textContent = hintsLeft;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        // Event Listeners
+        playAgainBtn.addEventListener('click', resetGame);
+        window.addEventListener('resize', updatePositions);
+
+        // --- אתחול המשחק ---
+        document.addEventListener('DOMContentLoaded', () => {
+            createTrack();
+            resetGame();
+        });
+    </script>
+</body>
+</html>
+
