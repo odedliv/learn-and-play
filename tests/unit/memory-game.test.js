@@ -7,16 +7,28 @@
 
 // Make function available globally for the test runner
 window.runMemoryGameTests = function() {
-    describe('Memory Game - Shuffle Function', () => {
-        // Import or reference the actual function from memory_game_engine.js
-        // For now, we'll test against a copy of the implementation
+    // Check if MemoryGame is loaded
+    const usingRealImplementation = typeof MemoryGame !== 'undefined' && MemoryGame.shuffleArray;
+    console.log(`Memory Game Tests: Using ${usingRealImplementation ? 'REAL' : 'MOCK'} implementation`);
 
+    describe('Memory Game - Shuffle Function', () => {
+        // Use the actual shuffleArray function from the real MemoryGame engine
+        // Note: MemoryGame.shuffleArray modifies the array in-place
         const shuffleArray = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+            // Create a copy to avoid modifying the original during tests
+            const copy = [...array];
+            if (usingRealImplementation) {
+                MemoryGame.shuffleArray(copy);
+                return copy;
+            } else {
+                // Fallback to mock if MemoryGame is not loaded
+                console.warn('MemoryGame not loaded, using mock implementation');
+                for (let i = copy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [copy[i], copy[j]] = [copy[j], copy[i]];
+                }
+                return copy;
             }
-            return array;
         };
 
         it('should return an array of the same length', () => {

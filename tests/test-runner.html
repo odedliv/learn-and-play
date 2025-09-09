@@ -294,7 +294,24 @@
 
             // Import and run test modules
             try {
-                // First, try to load the actual test file
+                // First, load the actual memory game engine
+                const engineScript = document.createElement('script');
+                engineScript.src = '/language/memory_game_engine.js';
+
+                // Wait for the engine to load
+                await new Promise((resolve) => {
+                    engineScript.onload = () => {
+                        console.log('Memory game engine loaded successfully');
+                        resolve();
+                    };
+                    engineScript.onerror = () => {
+                        console.error('Failed to load memory game engine');
+                        resolve(); // Continue anyway, tests will use mock
+                    };
+                    document.head.appendChild(engineScript);
+                });
+
+                // Then, load the test file
                 const testScript = document.createElement('script');
                 testScript.src = '/tests/unit/memory-game.test.js';
 
