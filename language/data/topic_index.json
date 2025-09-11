@@ -1,7 +1,7 @@
 {
-  "generated_at": "2025-09-06T23:19:35.432059",
+  "generated_at": "2025-09-11T21:30:17.083927",
   "generator_script": "generate_topic_index.py",
-  "total_files": 2,
+  "total_files": 3,
   "files": [
     {
       "filename": "הפכים.json",
@@ -18,6 +18,13 @@
       "has_metadata": true,
       "total_entries": 102,
       "source_file": "מילים_נרדפות.csv"
+    },
+    {
+      "filename": "מילים_קשות_1_ד2.json",
+      "description": "",
+      "file_size_bytes": 963,
+      "last_modified": "2025-09-11T21:21:32.008155",
+      "total_entries": 10
     }
   ]
 }
