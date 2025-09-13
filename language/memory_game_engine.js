@@ -667,6 +667,9 @@ const MemoryGame = {
     }
 };
 
+// Make MemoryGame globally accessible
+window.MemoryGame = MemoryGame;
+
 // Export for use in other modules if needed
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MemoryGame;

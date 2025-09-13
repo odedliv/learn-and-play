@@ -11,6 +11,39 @@ window.runMemoryGameTests = function() {
     const usingRealImplementation = typeof MemoryGame !== 'undefined' && MemoryGame.shuffleArray;
     console.log(`Memory Game Tests: Using ${usingRealImplementation ? 'REAL' : 'MOCK'} implementation`);
 
+    // Test for module loading issues (catches the bug where ES6 modules aren't loaded correctly)
+    describe('Memory Game - Module Loading', () => {
+        it('should have MemoryGame object defined globally', () => {
+            // This test will fail if memory_game_engine.js failed to load
+            // due to ES6 module issues (missing type="module" in script tag)
+            expect(typeof MemoryGame).not.toBe('undefined');
+
+            if (typeof MemoryGame === 'undefined') {
+                console.error('CRITICAL: MemoryGame is not defined! This usually means:');
+                console.error('1. The script failed to load due to ES6 import statements');
+                console.error('2. The script tag needs type="module" attribute');
+                console.error('3. MemoryGame needs to be attached to window object');
+            }
+        });
+
+        it('should have MemoryGame accessible on window object', () => {
+            if (typeof MemoryGame !== 'undefined') {
+                expect(window.MemoryGame).toBe(MemoryGame);
+            }
+        });
+
+        it('should have all required methods', () => {
+            if (typeof MemoryGame !== 'undefined') {
+                expect(typeof MemoryGame.init).toBe('function');
+                expect(typeof MemoryGame.shuffleArray).toBe('function');
+                expect(typeof MemoryGame.prepareGameData).toBe('function');
+                expect(typeof MemoryGame.checkForMatch).toBe('function');
+                expect(typeof MemoryGame.handleMatch).toBe('function');
+                expect(typeof MemoryGame.playSuccessSound).toBe('function');
+            }
+        });
+    });
+
     describe('Memory Game - Shuffle Function', () => {
         // Use the actual shuffleArray function from the real MemoryGame engine
         // Note: MemoryGame.shuffleArray modifies the array in-place

@@ -60,9 +60,10 @@ function mockPrepareGameData(jsonData) {
 // Helper to load actual game files
 export async function loadGameEngine() {
     try {
-        // Dynamically import the game engine
+        // Dynamically import the game engine as ES6 module
         const script = document.createElement('script');
         script.src = '/language/memory_game_engine.js';
+        script.type = 'module';
         document.head.appendChild(script);
 
         // Wait for script to load

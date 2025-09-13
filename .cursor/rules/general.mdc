@@ -24,3 +24,5 @@ you may decide whether or not to include the prompt that you used to generate th
    - do not change the tested code just to pass the test, without fixing the functionality.
    - in case of a problem, cunsult me.
 
+## for refactoring to use common/
+Any script that has ES6 import statements at the top level needs type="module".

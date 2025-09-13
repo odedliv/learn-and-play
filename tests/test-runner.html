@@ -294,9 +294,10 @@
 
             // Import and run test modules
             try {
-                // First, load the actual memory game engine
+                // First, load the actual memory game engine as ES6 module
                 const engineScript = document.createElement('script');
                 engineScript.src = '/language/memory_game_engine.js';
+                engineScript.type = 'module';
 
                 // Wait for the engine to load
                 await new Promise((resolve) => {
