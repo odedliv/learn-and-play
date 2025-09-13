@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-11T21:30:17.083927",
+  "generated_at": "2025-09-13T21:56:50.965213",
   "generator_script": "generate_topic_index.py",
   "total_files": 3,
   "files": [
@@ -20,7 +20,7 @@
       "source_file": "מילים_נרדפות.csv"
     },
     {
-      "filename": "מילים_קשות_1_ד2.json",
+      "filename": "מילים_קשות_מתוך_עוגת_האויבים.json",
       "description": "",
       "file_size_bytes": 963,
       "last_modified": "2025-09-11T21:21:32.008155",
