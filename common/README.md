@@ -7,9 +7,7 @@ A collection of reusable JavaScript utilities extracted from the Learn and Play 
 ```
 common/
 ├── audio/          # Audio playback functions
-│   ├── sounds_option_1.js  # Simple Web Audio API
-│   ├── sounds_option_2.js  # Musical notes sequences
-│   └── sounds_option_3.js  # Tone.js library implementation
+│   └── sounds.js   # Combined implementation (Web Audio + Tone.js)
 ├── data/           # Data loading utilities
 │   └── loader.js   # JSON loading, caching, preloading
 ├── game/           # Game state management
@@ -43,6 +41,35 @@ const timer = new Common.GameTimer({ duration: 60 });
 import { shuffleArray, GameTimer, loadJSON } from '../common/index.js';
 ```
 
+### Recommended Audio Implementation
+```javascript
+// Import the combined sound functions (best of both worlds)
+import {
+    initAudio,
+    playSuccessSound,
+    playErrorSound,
+    playVictorySound,
+    playGameOverSound
+} from '../common/audio/sounds.js';
+
+// Initialize once on user interaction
+document.addEventListener('click', initAudio, { once: true });
+
+// Use in your game
+if (isCorrect) {
+    playSuccessSound();
+} else {
+    playErrorSound();
+}
+
+// For game completion
+if (wonGame) {
+    playVictorySound();
+} else {
+    playGameOverSound();
+}
+```
+
 ### Import from Specific Modules
 ```javascript
 import { shuffleArray } from '../common/utils/array.js';
@@ -57,27 +84,21 @@ import { GameTimer } from '../common/timer/timer_option_2.js';
 - `pickRandom(array, count)` - Pick random elements
 - `getRandomElement(array)` - Get single random element
 
-### Audio Functions
+### Audio Functions (`audio/sounds.js`)
 
-#### Option 1: Simple (`audio/sounds_option_1.js`)
-- `initAudio()` - Initialize Web Audio context
-- `playSuccessSound()` - Simple success tone
-- `playErrorSound()` - Simple error tone
+**Combined implementation using Web Audio API for errors and Tone.js for success sounds**
 
-#### Option 2: Musical (`audio/sounds_option_2.js`)
-- `playCorrectSound()` - Musical success melody
-- `playIncorrectSound()` - Wood tap error sound
-- `playErrorSound()` - Descending error melody
+- `initAudio()` - Initialize both audio systems (call on first user interaction)
+- `playSuccessSound()` / `playCorrectSound()` - Ascending arpeggio (C5→E5→G5) using Tone.js
+- `playErrorSound()` / `playIncorrectSound()` / `playFailSound()` - Simple error tone using Web Audio
+- `playVictorySound()` - Victory fanfare sequence using Tone.js
+- `playGameOverSound()` - Descending melody using Tone.js
+- `disposeAudio()` - Clean up audio resources
 
-#### Option 3: Tone.js Library (`audio/sounds_option_3.js`)
-- `initToneAudio()` - Initialize Tone.js synthesizers
-- `playToneSuccess()` - Ascending arpeggio (C5->E5->G5)
-- `playToneError()` - Drum-like error thud
-- `playToneSequence(notes, synthType)` - Play custom note sequences
-- `playToneChord(notes, duration)` - Play chords
-- `playToneVictory()` - Victory fanfare sequence
-- `playToneGameOver()` - Descending game over melody
-- `disposeToneAudio()` - Clean up Tone.js resources
+**Note:** Requires Tone.js library for full functionality:
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+```
 
 ### Timer Utilities
 

@@ -53,20 +53,18 @@ export {
     validateGameSettings
 } from './utils/validation.js';
 
-// Audio functions - Option 1 (Simple Web Audio)
+// Audio functions (Combined implementation)
 export {
-    initAudio as initAudioSimple,
-    playSuccessSound as playSuccessSoundSimple,
-    playErrorSound as playErrorSoundSimple
-} from './audio/sounds_option_1.js';
-
-// Audio functions - Option 2 (Musical notes)
-export {
-    initAudio as initAudioMusical,
-    playCorrectSound as playCorrectSoundMusical,
-    playIncorrectSound as playIncorrectSoundMusical,
-    playErrorSound as playErrorSoundMusical
-} from './audio/sounds_option_2.js';
+    initAudio,
+    playSuccessSound,
+    playCorrectSound,
+    playErrorSound,
+    playIncorrectSound,
+    playFailSound,
+    playVictorySound,
+    playGameOverSound,
+    disposeAudio
+} from './audio/sounds.js';
 
 // Timer utilities - Option 1 (Function-based)
 export {
@@ -84,18 +82,6 @@ export {
     createCircularTimer,
     createTimerSVG
 } from './timer/timer_option_3.js';
-
-// Audio functions - Option 3 (Tone.js library)
-export {
-    initToneAudio,
-    playToneSuccess,
-    playToneError,
-    playToneSequence,
-    playToneChord,
-    playToneVictory,
-    playToneGameOver,
-    disposeToneAudio
-} from './audio/sounds_option_3.js';
 
 // Data loading utilities
 export {
