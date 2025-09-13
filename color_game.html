@@ -294,17 +294,17 @@
         const modalCloseBtn = document.getElementById('modalCloseBtn');
 
         /**
-         * Shuffles an array randomly.
+         * Shuffles an array randomly - imported from common library.
          * @param {Array} array - The array to shuffle.
          * @returns {Array} The shuffled array.
          */
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
-            }
-            return array;
-        }
+        let shuffleArray = null;
+        import('./common/utils/array.js').then(module => {
+            shuffleArray = module.shuffleArray; // Use in-place shuffle
+        }).catch((error) => {
+            console.error('Failed to load array utilities from common library:', error);
+            alert('Failed to load game resources. Please refresh the page.');
+        });
 
         /**
          * Initializes the game board by creating and rendering cards.

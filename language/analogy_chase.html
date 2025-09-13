@@ -227,14 +227,14 @@
           {"relationCategory":"הפכים","pairs":[{"itemA":"מתון","itemB":"קיצוני","distractorsA":["רגיל","ממוצע","רדיקלי","שפוי"],"distractorsB":["רגוע","חריף","ממוצע","חזק"]},{"itemA":"רוב","itemB":"מיעוט","distractorsA":["כולם","מעט","נדיר","בודד"],"distractorsB":["הרבה","מעט","חלק","כולם"]},{"itemA":"גבוה","itemB":"נמוך","distractorsA":["ארוך","רחב","שמן","למעלה"],"distractorsB":["קצר","צר","רזה","למטה"]},{"itemA":"שמן","itemB":"רזה","distractorsA":["גדול","רחב","עבה","בריא"],"distractorsB":["דק","צר","קטן","חלש"]}]}
         ];
 
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
-        }
+        // Import shuffleArrayCopy from common library (returns a new shuffled array)
+        let shuffleArray = null;
+        import('../common/utils/array.js').then(module => {
+            shuffleArray = module.shuffleArrayCopy;
+        }).catch((error) => {
+            console.error('Failed to load array utilities from common library:', error);
+            alert('Failed to load game resources. Please refresh the page.');
+        });
 
         function populateAndShuffleAnalogyPool() {
             analogyPool = [];

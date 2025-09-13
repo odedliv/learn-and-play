@@ -3,6 +3,9 @@
  * Handles the entire memory game logic for both pairs and multiple synonyms data formats
  */
 
+// Import shuffleArray from common library
+import { shuffleArray } from '../common/utils/array.js';
+
 const MemoryGame = {
     // Game state variables
     gameData: null,
@@ -656,14 +659,11 @@ const MemoryGame = {
     },
 
     /**
-     * Shuffle array using Fisher-Yates algorithm
+     * Shuffle array using Fisher-Yates algorithm from common library
      * @param {Array} array - Array to shuffle (modified in place)
      */
     shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
+        return shuffleArray(array);
     }
 };
 
