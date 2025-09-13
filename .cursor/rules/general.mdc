@@ -9,11 +9,18 @@ you may decide to create a new file, split a file, or add to an existing file.
 you may decide whether or not to include the prompt that you used to generate the changes.
 
 # rule: testing practice
-When creating or modifying functionality:
+## When creating or modifying functionality:
 - Write or update tests for any new functions, especially in /common utilities
 - Include test cases for: happy path, edge cases, and error conditions
 - Document untested code with TODO comments explaining why tests are missing
 - For bug fixes: first write a failing test that reproduces the bug, then fix it
 - Prefer simple browser-based tests over complex tooling for this educational project
 - Test files should mirror source structure: /common/utils/array.js → /tests/unit/array.test.js
+
+## when adding tests:
+- verify the tests pass
+- if the test fails, do not hide the failing.  make sure the functionality in question is properly tested and passes.  that is:
+   - do not force the test to pass while the functionality is broken.
+   - do not change the tested code just to pass the test, without fixing the functionality.
+   - in case of a problem, cunsult me.
 
