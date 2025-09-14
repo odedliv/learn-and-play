@@ -32,6 +32,10 @@ export function shuffleArrayCopy(array) {
  * @returns {Array} Array of randomly picked elements
  */
 export function pickRandom(array, count) {
+    // Handle invalid count values
+    if (count <= 0 || !Number.isFinite(count)) {
+        return [];
+    }
     const shuffled = shuffleArrayCopy(array);
     return shuffled.slice(0, count);
 }

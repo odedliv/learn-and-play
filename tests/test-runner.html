@@ -345,9 +345,18 @@
 
             // Import and run test modules
             try {
-                // First, load the actual memory game engine using dynamic import
-                // This approach has been proven to work in test_audio_import.html
-                console.log('Importing memory game engine...');
+                // Load necessary modules
+                console.log('Loading modules for testing...');
+
+                // Load array utilities
+                try {
+                    await import('/tests/helpers/load-array-utils.js');
+                    console.log('Array utils helper loaded');
+                } catch (error) {
+                    console.error('Failed to load array utils helper:', error);
+                }
+
+                // Load memory game engine
                 try {
                     await import('/language/memory_game_engine.js');
                     console.log('Memory game engine imported successfully');
@@ -357,7 +366,29 @@
                     // Continue anyway, tests will use mock
                 }
 
-                // Then, load the test file
+                // Load and run array utils tests
+                const arrayTestScript = document.createElement('script');
+                arrayTestScript.src = '/tests/unit/array-utils.test.js';
+
+                await new Promise((resolve) => {
+                    arrayTestScript.onload = () => {
+                        console.log('Array utils test file loaded');
+                        setTimeout(() => {
+                            if (typeof window.runArrayUtilsTests === 'function') {
+                                console.log('Running array utils tests...');
+                                window.runArrayUtilsTests();
+                            }
+                            resolve();
+                        }, 100);
+                    };
+                    arrayTestScript.onerror = () => {
+                        console.error('Failed to load array utils tests');
+                        resolve();
+                    };
+                    document.head.appendChild(arrayTestScript);
+                });
+
+                // Then, load the memory game test file
                 const testScript = document.createElement('script');
                 testScript.src = '/tests/unit/memory-game.test.js';
 
