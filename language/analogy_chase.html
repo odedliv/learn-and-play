@@ -227,12 +227,20 @@
           {"relationCategory":"הפכים","pairs":[{"itemA":"מתון","itemB":"קיצוני","distractorsA":["רגיל","ממוצע","רדיקלי","שפוי"],"distractorsB":["רגוע","חריף","ממוצע","חזק"]},{"itemA":"רוב","itemB":"מיעוט","distractorsA":["כולם","מעט","נדיר","בודד"],"distractorsB":["הרבה","מעט","חלק","כולם"]},{"itemA":"גבוה","itemB":"נמוך","distractorsA":["ארוך","רחב","שמן","למעלה"],"distractorsB":["קצר","צר","רזה","למטה"]},{"itemA":"שמן","itemB":"רזה","distractorsA":["גדול","רחב","עבה","בריא"],"distractorsB":["דק","צר","קטן","חלש"]}]}
         ];
 
-        // Import shuffleArrayCopy from common library (returns a new shuffled array)
+        // Import from common library
         let shuffleArray = null;
-        import('../common/utils/array.js').then(module => {
-            shuffleArray = module.shuffleArrayCopy;
+        let audioModule = null;
+
+        // Load common modules
+        Promise.all([
+            import('../common/utils/array.js'),
+            import('../common/audio/sounds.js')
+        ]).then(([arrayModule, soundModule]) => {
+            shuffleArray = arrayModule.shuffleArrayCopy;
+            audioModule = soundModule;
+            audioModule.initAudio();
         }).catch((error) => {
-            console.error('Failed to load array utilities from common library:', error);
+            console.error('Failed to load common library modules:', error);
             alert('Failed to load game resources. Please refresh the page.');
         });
 
@@ -390,6 +398,10 @@
                 playerPosition++;
                 chaserPosition++;
                 clickedButton.classList.add('correct');
+                // Play success sound
+                if (audioModule) {
+                    audioModule.playSuccessSound();
+                }
             } else {
                 chaserPosition++;
                 if (clickedButton) {
@@ -400,6 +412,10 @@
                         btn.classList.add('correct');
                     }
                 });
+                // Play error sound
+                if (audioModule) {
+                    audioModule.playErrorSound();
+                }
             }
 
             setTimeout(() => {
@@ -439,11 +455,19 @@
                 modalTitle.textContent = 'ניצחת!';
                 modalTitle.className = 'text-4xl font-bold mb-4 text-green-500';
                 modalText.textContent = customMessage || 'ברחת מהרודף והגעת אל הגביע!';
+                // Play victory sound
+                if (audioModule) {
+                    audioModule.playVictorySound();
+                }
             } else {
                 modalIcon.textContent = '🌀';
                 modalTitle.textContent = 'הפסדת...';
                 modalTitle.className = 'text-4xl font-bold mb-4 text-red-500';
                 modalText.textContent = 'הרודף השיג אותך. נסה שוב!';
+                // Play game over sound (lose) - only in chase game
+                if (audioModule) {
+                    audioModule.playGameOverSound();
+                }
             }
             distanceStat.textContent = Math.max(0, playerPosition - chaserPosition);
             hintsStat.textContent = hintsLeft;

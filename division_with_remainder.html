@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תרגול חילוק עם שארית</title>
-    
+
     <!-- Load React, ReactDOM, and Babel for JSX transformation -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,12 +12,12 @@
 
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Load Google Font (Heebo) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Custom styles for RTL and font -->
     <style>
         body {
@@ -55,59 +55,31 @@
             const [feedbackMessage, setFeedbackMessage] = useState('');
             const [isCorrect, setIsCorrect] = useState(null);
 
-            // Audio contexts and buffers
-            const audioContext = useRef(null);
+            // Import audio functions from common library
+            const audioModule = useRef(null);
 
-            // Initialize audio context
+            // Load audio module
             useEffect(() => {
-                try {
-                    audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
-                } catch (e) {
-                    console.error("Web Audio API is not supported in this browser:", e);
-                }
-            }, []);
-
-            // Function to play a sequence of notes for a correct answer
-            const playCorrectSound = useCallback(() => {
-                if (!audioContext.current) return;
-                
-                const notes = [
-                    { frequency: 392, duration: 0.2 }, // G4 (Sol)
-                    { frequency: 330, duration: 0.1 }, // E4 (Mi)
-                    { frequency: 262, duration: 0.1 }, // C4 (Do)
-                    { frequency: 523, duration: 0.1 }  // C5 (High Do)
-                ];
-
-                let time = audioContext.current.currentTime;
-                notes.forEach(note => {
-                    const oscillator = audioContext.current.createOscillator();
-                    const gainNode = audioContext.current.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.current.destination);
-
-                    oscillator.type = 'sine';
-                    oscillator.frequency.value = note.frequency;
-
-                    // Simple ADSR envelope
-                    gainNode.gain.setValueAtTime(0, time);
-                    gainNode.gain.linearRampToValueAtTime(0.5, time + 0.05); // Attack
-                    gainNode.gain.linearRampToValueAtTime(0.3, time + note.duration - 0.1); // Decay
-                    gainNode.gain.linearRampToValueAtTime(0, time + note.duration); // Release
-
-                    oscillator.start(time);
-                    oscillator.stop(time + note.duration);
-
-                    time += note.duration + 0.05; // Add a small pause between notes
+                import('./common/audio/sounds.js').then(module => {
+                    audioModule.current = module;
+                    audioModule.current.initAudio();
+                }).catch(error => {
+                    console.error('Failed to load audio module:', error);
                 });
             }, []);
 
-            // Function to play a "wood tap" sound for an incorrect answer
+            // Function to play a success sound for a correct answer
+            const playCorrectSound = useCallback(() => {
+                if (audioModule.current) {
+                    audioModule.current.playSuccessSound();
+                }
+            }, []);
+
+            // Function to play an error sound for an incorrect answer
             const playIncorrectSound = useCallback(() => {
-                // This is a valid Base64 encoded WAV file for a simple tap/click sound.
-                const incorrectSoundBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARgAAIAAAACAAAACsAAAByAAAAAEACABAAAAAAAAAgAIAQACABQAAAEACABAAAAABAAIAAAAABAAEAIAAAAEABAAEAAAAAByAAA//w=';
-                const incorrectSound = new Audio(incorrectSoundBase64);
-                incorrectSound.play().catch(e => console.error("Error playing incorrect sound:", e));
+                if (audioModule.current) {
+                    audioModule.current.playErrorSound();
+                }
             }, []);
 
             // Function to generate a new problem

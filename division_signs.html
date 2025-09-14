@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>משחק לתרגול סימני החלוקה</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <!-- Audio will be loaded from common library instead of Tone.js -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
@@ -157,7 +157,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Main game area -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 items-start mt-8">
             <!-- Left Side: Divisor -->
@@ -173,7 +173,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- End Screen (initially hidden) -->
     <div id="end-screen" class="hidden text-center bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
         <h2 class="text-4xl font-bold text-blue-600 mb-4">המשחק הסתיים!</h2>
@@ -201,12 +201,12 @@
         const endScreen = document.getElementById('end-screen');
         const startButton = document.getElementById('start-button');
         const newGameButton = document.getElementById('new-game-button');
-        
+
         const scoreDisplay = document.getElementById('score-display');
         const finalScoreDisplay = document.getElementById('final-score');
         const timerProgress = document.getElementById('timer-progress');
         const timerText = document.getElementById('timer-text');
-        
+
         const row1Checkbox = document.getElementById('row1');
         const row2Checkbox = document.getElementById('row2');
 
@@ -219,21 +219,20 @@
         let gameTimerIntervalId = null;
         const CIRCLE_CIRCUMFERENCE = 283; // 2 * Math.PI * 45
 
-        // Sound Synthesis for feedback
-        let correctSynth, wrongSynth;
+        // Audio module from common library
+        let audioModule = null;
+
+        // Load audio module
+        import('./common/audio/sounds.js').then(module => {
+            audioModule = module;
+        }).catch(error => {
+            console.error('Failed to load audio module:', error);
+        });
 
         startButton.addEventListener('click', () => {
-             // Initialize audio context on user action
-            if (!correctSynth) {
-                correctSynth = new Tone.Synth({
-                    oscillator: { type: 'triangle' },
-                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
-                }).toDestination();
-                wrongSynth = new Tone.MembraneSynth({
-                    pitchDecay: 0.01,
-                    octaves: 6,
-                    envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.2 }
-                }).toDestination();
+            // Initialize audio on user action
+            if (audioModule) {
+                audioModule.initAudio();
             }
 
             const selectedDivisors = [];
@@ -263,7 +262,7 @@
 
             setupScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
-            
+
             score = 0;
             updateScoreDisplay();
             startGameTimer();
@@ -338,7 +337,7 @@
             } while (divisibleCount !== 1);
 
             const candidatesContainer = document.getElementById('candidates-container');
-            candidatesContainer.innerHTML = ''; 
+            candidatesContainer.innerHTML = '';
 
             candidates.sort(() => Math.random() - 0.5);
 
@@ -354,7 +353,7 @@
         function handleCandidateClick(event, selectedNumber, divisor) {
             const isCorrect = selectedNumber % divisor === 0;
             const clickedButton = event.target;
-            
+
             if (isCorrect) {
                 if (attempts === 1) score += 10;
                 else if (attempts === 2) score += 1;
@@ -363,18 +362,19 @@
                 const allButtons = document.querySelectorAll('#candidates-container button');
                 allButtons.forEach(btn => btn.disabled = true);
 
-                const now = Tone.now();
-                correctSynth.triggerAttackRelease("C5", "8n", now);
-                correctSynth.triggerAttackRelease("E5", "8n", now + 0.15);
-                correctSynth.triggerAttackRelease("G5", "8n", now + 0.3);
-                
+                if (audioModule) {
+                    audioModule.playSuccessSound();
+                }
+
                 clickedButton.classList.add('flash-green');
 
                 setTimeout(startNewRound, 1500);
 
             } else {
                 attempts++;
-                wrongSynth.triggerAttackRelease("C2", "8n");
+                if (audioModule) {
+                    audioModule.playErrorSound();
+                }
 
                 clickedButton.disabled = true;
                 clickedButton.classList.add('flash-black', 'opacity-50', 'cursor-not-allowed');

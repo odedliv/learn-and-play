@@ -3,8 +3,9 @@
  * Handles the entire memory game logic for both pairs and multiple synonyms data formats
  */
 
-// Import shuffleArray from common library
+// Import from common library
 import { shuffleArray } from '../common/utils/array.js';
+import { initAudio, playSuccessSound, playVictorySound } from '../common/audio/sounds.js';
 
 const MemoryGame = {
     // Game state variables
@@ -27,6 +28,9 @@ const MemoryGame = {
      */
     async init(filePath) {
         this.currentFilePath = filePath;
+
+        // Initialize audio on user interaction
+        initAudio();
 
         try {
             // Load the JSON data
@@ -605,6 +609,7 @@ const MemoryGame = {
      * Show win message
      */
     showWinMessage() {
+        playVictorySound(); // Play victory sound when game is won
         const statusElement = document.getElementById('game-status');
         if (statusElement) {
             statusElement.textContent = '🎉 כל הכבוד! ניצחת! 🎉';
@@ -622,40 +627,10 @@ const MemoryGame = {
     },
 
     /**
-     * Play success sound when cards match
+     * Play success sound when cards match - uses common library
      */
     playSuccessSound() {
-        // Initialize AudioContext on first use
-        if (!this.audioContext) {
-            try {
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            } catch (e) {
-                console.error("Web Audio API is not supported");
-                return;
-            }
-        }
-
-        if (!this.audioContext) return;
-
-        try {
-            const oscillator = this.audioContext.createOscillator();
-            const gainNode = this.audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(this.audioContext.destination);
-
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 600;
-
-            const now = this.audioContext.currentTime;
-            gainNode.gain.setValueAtTime(0.3, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-
-            oscillator.start(now);
-            oscillator.stop(now + 0.5);
-        } catch (e) {
-            console.error("Error playing sound:", e);
-        }
+        playSuccessSound();
     },
 
     /**

@@ -26,3 +26,7 @@ you may decide whether or not to include the prompt that you used to generate th
 
 ## for refactoring to use common/
 Any script that has ES6 import statements at the top level needs type="module".
+
+
+# shortages
+* **message**: when writing 'message', it means 'please draft a commit message for the changes done since last commit'
