@@ -27,6 +27,18 @@ you may decide whether or not to include the prompt that you used to generate th
 ## for refactoring to use common/
 Any script that has ES6 import statements at the top level needs type="module".
 
+# rule: temp files
+when creating temp files, like lists, or python files to do some conversion or test, put them in directory Temp
 
 # shortages
+when I write these words, here is what i mean:
+
 * **message**: when writing 'message', it means 'please draft a commit message for the changes done since last commit'
+
+* **debug**:
+  1. diagnoze this bug
+  2. if there is no test falling because of this bug, add a unit test.
+  3. if possible, suggest a fix.
+  4. if fixed and possible, test your fix.  if it needs push - say so.
+  5. summarize.
+

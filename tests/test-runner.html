@@ -174,7 +174,7 @@
             }
 
             expect(actual) {
-                return {
+                const matchers = {
                     toBe(expected) {
                         if (actual !== expected) {
                             throw new Error(`Expected ${JSON.stringify(expected)} but got ${JSON.stringify(actual)}`);
@@ -220,6 +220,12 @@
                         }
                     },
 
+                    toBeDefined() {
+                        if (actual === undefined) {
+                            throw new Error(`Expected value to be defined, but got undefined`);
+                        }
+                    },
+
                     toThrow() {
                         if (typeof actual !== 'function') {
                             throw new Error('Expected a function to test for throwing');
@@ -236,6 +242,51 @@
                             throw new Error('Expected function to throw an error');
                         }
                     }
+                };
+
+                // Add .not property for negated assertions
+                const notMatchers = {
+                    toBe(expected) {
+                        if (actual === expected) {
+                            throw new Error(`Expected ${JSON.stringify(actual)} NOT to be ${JSON.stringify(expected)}`);
+                        }
+                    },
+
+                    toEqual(expected) {
+                        if (JSON.stringify(actual) === JSON.stringify(expected)) {
+                            throw new Error(`Expected ${JSON.stringify(actual)} NOT to equal ${JSON.stringify(expected)}`);
+                        }
+                    },
+
+                    toContain(item) {
+                        if (actual && actual.includes && actual.includes(item)) {
+                            throw new Error(`Expected ${JSON.stringify(actual)} NOT to contain ${JSON.stringify(item)}`);
+                        }
+                    },
+
+                    toBeTruthy() {
+                        if (actual) {
+                            throw new Error(`Expected ${JSON.stringify(actual)} to be falsy`);
+                        }
+                    },
+
+                    toBeFalsy() {
+                        if (!actual) {
+                            throw new Error(`Expected ${JSON.stringify(actual)} to be truthy`);
+                        }
+                    },
+
+                    toBeDefined() {
+                        if (actual !== undefined) {
+                            throw new Error(`Expected value to be undefined`);
+                        }
+                    }
+                };
+
+                // Return matchers with .not property
+                return {
+                    ...matchers,
+                    not: notMatchers
                 };
             }
 
@@ -294,23 +345,17 @@
 
             // Import and run test modules
             try {
-                // First, load the actual memory game engine as ES6 module
-                const engineScript = document.createElement('script');
-                engineScript.src = '/language/memory_game_engine.js';
-                engineScript.type = 'module';
-
-                // Wait for the engine to load
-                await new Promise((resolve) => {
-                    engineScript.onload = () => {
-                        console.log('Memory game engine loaded successfully');
-                        resolve();
-                    };
-                    engineScript.onerror = () => {
-                        console.error('Failed to load memory game engine');
-                        resolve(); // Continue anyway, tests will use mock
-                    };
-                    document.head.appendChild(engineScript);
-                });
+                // First, load the actual memory game engine using dynamic import
+                // This approach has been proven to work in test_audio_import.html
+                console.log('Importing memory game engine...');
+                try {
+                    await import('/language/memory_game_engine.js');
+                    console.log('Memory game engine imported successfully');
+                    console.log('MemoryGame available:', typeof window.MemoryGame !== 'undefined');
+                } catch (error) {
+                    console.error('Failed to import memory game engine:', error);
+                    // Continue anyway, tests will use mock
+                }
 
                 // Then, load the test file
                 const testScript = document.createElement('script');

@@ -5,7 +5,26 @@
 
 // Import from common library
 import { shuffleArray } from '../common/utils/array.js';
-import { initAudio, playSuccessSound, playVictorySound } from '../common/audio/sounds.js';
+
+// Audio functions will be loaded dynamically to avoid module loading issues
+let audioFunctions = {
+    initAudio: () => console.log('Audio not loaded'),
+    playSuccessSound: () => console.log('Audio not loaded'),
+    playVictorySound: () => console.log('Audio not loaded')
+};
+
+// Load audio module dynamically
+import('../common/audio/sounds.js').then(module => {
+    audioFunctions = {
+        initAudio: module.initAudio,
+        playSuccessSound: module.playSuccessSound,
+        playVictorySound: module.playVictorySound
+    };
+    console.log('Audio module loaded successfully');
+}).catch(error => {
+    console.warn('Failed to load audio module:', error);
+    // Keep default no-op functions
+});
 
 const MemoryGame = {
     // Game state variables
@@ -30,7 +49,7 @@ const MemoryGame = {
         this.currentFilePath = filePath;
 
         // Initialize audio on user interaction
-        initAudio();
+        audioFunctions.initAudio();
 
         try {
             // Load the JSON data
@@ -609,7 +628,7 @@ const MemoryGame = {
      * Show win message
      */
     showWinMessage() {
-        playVictorySound(); // Play victory sound when game is won
+        audioFunctions.playVictorySound(); // Play victory sound when game is won
         const statusElement = document.getElementById('game-status');
         if (statusElement) {
             statusElement.textContent = '🎉 כל הכבוד! ניצחת! 🎉';
@@ -630,7 +649,7 @@ const MemoryGame = {
      * Play success sound when cards match - uses common library
      */
     playSuccessSound() {
-        playSuccessSound();
+        audioFunctions.playSuccessSound();
     },
 
     /**
