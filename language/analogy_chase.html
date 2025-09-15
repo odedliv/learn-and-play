@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מרדף האנלוגיות</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -242,8 +243,9 @@
                 ]);
                 shuffleArray = arrayModule.shuffleArrayCopy;
                 audioModule = soundModule;
-                audioModule.initAudio();
+                // Don't initialize audio here, wait for user interaction
                 modulesLoaded = true;
+                console.log('Audio module loaded, will initialize on user interaction');
 
                 // Initialize the game now that modules are loaded
                 createTrack();
@@ -273,20 +275,29 @@
                 return;
             }
             analogyPool = [];
+
+            // Create all possible question combinations from the data
             analogiesData.forEach(category => {
                 if (category.pairs && category.pairs.length >= 2) {
-                    const shuffledPairs = shuffleArray(category.pairs);
-                    for (let i = 0; i < shuffledPairs.length - 1; i += 2) {
-                        analogyPool.push({
-                            categoryName: category.relationCategory,
-                            pair1: shuffledPairs[i],
-                            pair2: shuffledPairs[i + 1]
-                        });
+                    // Create questions by using each pair combination
+                    for (let i = 0; i < category.pairs.length; i++) {
+                        for (let j = 0; j < category.pairs.length; j++) {
+                            if (i !== j) {
+                                analogyPool.push({
+                                    categoryName: category.relationCategory,
+                                    pair1: category.pairs[i],
+                                    pair2: category.pairs[j]
+                                });
+                            }
+                        }
                     }
                 }
             });
+
+            // Shuffle the pool to randomize question order
             analogyPool = shuffleArray(analogyPool);
             currentAnalogyIndex = 0;
+            console.log(`Generated ${analogyPool.length} questions`);
         }
 
         function createTrack() {
@@ -312,6 +323,16 @@
             hintsLeft = TOTAL_HINTS;
 
             gameOverModal.classList.add('hidden');
+
+            // Initialize audio on user interaction (clicking play again)
+            if (audioModule && audioModule.initAudio) {
+                try {
+                    audioModule.initAudio();
+                    console.log('Audio initialized on game reset');
+                } catch (e) {
+                    console.error('Failed to initialize audio:', e);
+                }
+            }
 
             populateAndShuffleAnalogyPool();
 
@@ -383,12 +404,23 @@
                 return;
             }
 
+            // Initialize audio on first question if needed
+            if (audioModule && audioModule.initAudio) {
+                try {
+                    audioModule.initAudio();
+                } catch (e) {
+                    console.error('Failed to initialize audio:', e);
+                }
+            }
+
             hintDisplay.textContent = '';
             hintBtn.disabled = (hintsLeft === 0);
 
             if (currentAnalogyIndex >= analogyPool.length) {
-                showGameOver(true, "כל הכבוד! סיימת את כל השאלות במאגר!");
-                return;
+                // Reshuffle the pool to continue playing
+                currentAnalogyIndex = 0;
+                analogyPool = shuffleArray(analogyPool);
+                console.log('Reshuffled question pool for continued play');
             }
 
             const analogy = analogyPool[currentAnalogyIndex];
@@ -436,15 +468,18 @@
             hintBtn.onclick = null;
 
             if (isCorrect) {
-                playerPosition++;
-                chaserPosition++;
-                clickedButton.classList.add('correct');
+                playerPosition++;     // Player moves forward 1 position
+                chaserPosition++;     // Chaser also moves forward 1 position
+                if (clickedButton) {
+                    clickedButton.classList.add('correct');
+                }
                 // Play success sound
                 if (audioModule) {
                     audioModule.playSuccessSound();
                 }
             } else {
-                chaserPosition++;
+                chaserPosition++;     // Chaser moves forward 1 position
+                // Player doesn't move on wrong answer
                 if (clickedButton) {
                     clickedButton.classList.add('incorrect');
                 }
@@ -518,6 +553,20 @@
         // Event Listeners
         playAgainBtn.addEventListener('click', resetGame);
         window.addEventListener('resize', updatePositions);
+
+        // Initialize audio on first user interaction anywhere on the page
+        document.addEventListener('click', function initAudioOnce() {
+            if (audioModule && audioModule.initAudio) {
+                try {
+                    audioModule.initAudio();
+                    console.log('Audio initialized on first click');
+                } catch (e) {
+                    console.error('Failed to initialize audio:', e);
+                }
+                // Remove this listener after first click
+                document.removeEventListener('click', initAudioOnce);
+            }
+        }, { once: true });
 
         // --- אתחול המשחק ---
         document.addEventListener('DOMContentLoaded', () => {

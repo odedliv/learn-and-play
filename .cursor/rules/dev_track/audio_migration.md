@@ -93,3 +93,4 @@ The following games don't currently have audio (could be added in future):
 - color_game.html - No audio implementation (could add sounds)
 
 Note: bomb_multiplications should NOT have game over sound on failure (as specified), only success sounds could be added.
+

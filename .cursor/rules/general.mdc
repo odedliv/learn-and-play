@@ -33,12 +33,17 @@ when creating temp files, like lists, or python files to do some conversion or t
 # shortages
 when I write these words, here is what i mean:
 
-* **message**: when writing 'message', it means 'please draft a commit message for the changes done since last commit'
+* **\message**: when writing 'message', it means 'please draft a commit message for the changes done since last commit'
+suggest 2 commit messages:
+- short
+- very short
 
-* **debug**:
+* **\debug**:
   1. diagnoze this bug
   2. if there is no test falling because of this bug, add a unit test.
   3. if possible, suggest a fix.
   4. if fixed and possible, test your fix.  if it needs push - say so.
   5. summarize.
+
+**\c**: please continue
 

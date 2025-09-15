@@ -60,3 +60,4 @@ As the user noted, when running from localhost but loading files from a remote r
    - Explicitly attach any needed globals to the window object
 2. Always test the full user flow after module system changes
 3. Consider creating integration tests that verify script loading
+
