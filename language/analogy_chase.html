@@ -49,8 +49,9 @@
             position: absolute;
             bottom: -25px;
             font-size: 2.8rem;
-            transition: right 0.5s cubic-bezier(0.45, 0, 0.55, 1);
+            transition: left 0.5s cubic-bezier(0.45, 0, 0.55, 1);
             filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.3));
+            transform: translateX(-50%);
         }
 
         .timer-svg {
@@ -230,21 +231,47 @@
         // Import from common library
         let shuffleArray = null;
         let audioModule = null;
+        let modulesLoaded = false;
 
-        // Load common modules
-        Promise.all([
-            import('../common/utils/array.js'),
-            import('../common/audio/sounds.js')
-        ]).then(([arrayModule, soundModule]) => {
-            shuffleArray = arrayModule.shuffleArrayCopy;
-            audioModule = soundModule;
-            audioModule.initAudio();
-        }).catch((error) => {
-            console.error('Failed to load common library modules:', error);
-            alert('Failed to load game resources. Please refresh the page.');
-        });
+        // Load common modules and initialize game after loading
+        async function loadModulesAndInitialize() {
+            try {
+                const [arrayModule, soundModule] = await Promise.all([
+                    import('../common/utils/array.js'),
+                    import('../common/audio/sounds.js')
+                ]);
+                shuffleArray = arrayModule.shuffleArrayCopy;
+                audioModule = soundModule;
+                audioModule.initAudio();
+                modulesLoaded = true;
+
+                // Initialize the game now that modules are loaded
+                createTrack();
+                resetGame();
+            } catch (error) {
+                console.error('Failed to load common library modules:', error);
+                // Provide fallback for shuffleArray if modules fail to load
+                shuffleArray = function(array) {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                };
+                modulesLoaded = true;
+
+                // Initialize the game with fallback
+                createTrack();
+                resetGame();
+            }
+        }
 
         function populateAndShuffleAnalogyPool() {
+            if (!shuffleArray) {
+                console.error('shuffleArray not loaded yet');
+                return;
+            }
             analogyPool = [];
             analogiesData.forEach(category => {
                 if (category.pairs && category.pairs.length >= 2) {
@@ -294,13 +321,22 @@
         }
 
         function updatePositions() {
-            // This logic calculates the percentage position along the track
+            // For RTL layout, we need to position from left instead of right
             const playerPercent = (playerPosition / FINISH_LINE) * 100;
             const chaserPercent = (chaserPosition / FINISH_LINE) * 100;
 
-            // Clamp the value between 0 and 95% to keep icons within bounds
-            playerEl.style.right = `calc(${Math.min(playerPercent, 95)}% - ${playerEl.offsetWidth / 2}px)`;
-            chaserEl.style.right = `calc(${Math.min(chaserPercent, 95)}% - ${chaserEl.offsetWidth / 2}px)`;
+            // In RTL, higher positions should appear on the left (start of reading direction)
+            // So we invert the percentage: 100% - calculated%
+            const playerLeft = 100 - playerPercent;
+            const chaserLeft = 100 - chaserPercent;
+
+            // Use left positioning for RTL layout
+            playerEl.style.left = `${Math.max(playerLeft, 5)}%`;
+            chaserEl.style.left = `${Math.max(chaserLeft, 5)}%`;
+
+            // Remove any right positioning that might interfere
+            playerEl.style.right = '';
+            chaserEl.style.right = '';
         }
 
         function updateStatsDisplay() {
@@ -342,6 +378,11 @@
         }
 
         function generateQuestion() {
+            if (!shuffleArray || !analogyPool || analogyPool.length === 0) {
+                console.error('Game not properly initialized');
+                return;
+            }
+
             hintDisplay.textContent = '';
             hintBtn.disabled = (hintsLeft === 0);
 
@@ -480,8 +521,8 @@
 
         // --- אתחול המשחק ---
         document.addEventListener('DOMContentLoaded', () => {
-            createTrack();
-            resetGame();
+            // Load modules and then initialize the game
+            loadModulesAndInitialize();
         });
     </script>
 </body>
