@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>משחק עיגול מספרים</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -259,11 +260,11 @@
             .game-content {
                 flex-direction: column;
             }
-            
+
             .current-number {
                 font-size: 48px;
             }
-            
+
             .radio-group {
                 flex-direction: column;
             }
@@ -332,6 +333,17 @@
     </div>
 
     <script>
+        // Audio module from common library
+        let audioModule = null;
+
+        // Load audio module
+        import('./common/audio/sounds.js').then(module => {
+            audioModule = module;
+            console.log('Audio module loaded successfully');
+        }).catch(error => {
+            console.error('Failed to load audio module:', error);
+        });
+
         // משתנים גלובליים
         let gameSettings = {
             rounding: null,
@@ -383,6 +395,11 @@
         backBtn.addEventListener('click', backToSetup);
 
         function startGame() {
+            // Initialize audio on user action
+            if (audioModule) {
+                audioModule.initAudio();
+            }
+
             setupScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             gameState.score = 0;
@@ -399,29 +416,29 @@
         function updateInstructions() {
             const roundingText = gameSettings.rounding === 'tens' ? 'לעשרת הקרובה' : 'למאה הקרובה';
             gameInstructions.textContent = `עגל את המספר ${roundingText}:`;
-            
+
             const downText = gameSettings.rounding === 'tens' ? 'עגל כלפי מטה' : 'עגל כלפי מטה';
             const upText = gameSettings.rounding === 'tens' ? 'עגל כלפי מעלה' : 'עגל כלפי מעלה';
-            
+
             // הכפתורים יוצגו עם המספרים המעוגלים בפונקציה calculateCorrectAnswer
         }
 
         function generateNewNumber() {
             const min = Math.pow(10, gameSettings.digits - 1);
             const max = Math.pow(10, gameSettings.digits) - 1;
-            
+
             let number;
             do {
                 number = Math.floor(Math.random() * (max - min + 1)) + min;
             } while (isRounded(number));
-            
+
             gameState.currentNumber = number;
             currentNumberEl.textContent = number;
-            
+
             // נקה את הצביעה מהכפתורים
             roundDownBtn.classList.remove('correct', 'incorrect');
             roundUpBtn.classList.remove('correct', 'incorrect');
-            
+
             calculateCorrectAnswer();
         }
 
@@ -436,7 +453,7 @@
         function calculateCorrectAnswer() {
             const number = gameState.currentNumber;
             let roundDown, roundUp;
-            
+
             if (gameSettings.rounding === 'tens') {
                 roundDown = Math.floor(number / 10) * 10;
                 roundUp = Math.ceil(number / 10) * 10;
@@ -444,12 +461,12 @@
                 roundDown = Math.floor(number / 100) * 100;
                 roundUp = Math.ceil(number / 100) * 100;
             }
-            
+
             gameState.correctAnswer = {
                 down: roundDown,
                 up: roundUp
             };
-            
+
             // עדכון טקסט הכפתורים עם המספרים המעוגלים
             roundUpBtn.innerHTML = `${roundUp}`;
             roundDownBtn.innerHTML = `${roundDown}`;
@@ -463,7 +480,7 @@
             const number = gameState.currentNumber;
             let isCorrect = false;
             const chosenButton = choice === 'down' ? roundDownBtn : roundUpBtn;
-            
+
             if (gameSettings.rounding === 'tens') {
                 const lastDigit = number % 10;
                 if (choice === 'down' && lastDigit < 5) isCorrect = true;
@@ -473,14 +490,14 @@
                 if (choice === 'down' && lastTwoDigits < 50) isCorrect = true;
                 if (choice === 'up' && lastTwoDigits >= 50) isCorrect = true;
             }
-            
+
             showFeedback(isCorrect, chosenButton);
-            
+
             if (isCorrect) {
                 gameState.score++;
                 updateScore();
             }
-            
+
             setTimeout(() => {
                 generateNewNumber();
             }, 1000);
@@ -490,18 +507,26 @@
             // צבע את הכפתור שנבחר
             if (isCorrect) {
                 chosenButton.classList.add('correct');
+                // Play success sound
+                if (audioModule) {
+                    audioModule.playSuccessSound();
+                }
             } else {
                 chosenButton.classList.add('incorrect');
                 // גם צבע את הכפתור הנכון בירוק
                 const correctChoice = getCorrectChoice();
                 const correctButton = correctChoice === 'down' ? roundDownBtn : roundUpBtn;
                 correctButton.classList.add('correct');
+                // Play error sound
+                if (audioModule) {
+                    audioModule.playErrorSound();
+                }
             }
         }
 
         function getCorrectChoice() {
             const number = gameState.currentNumber;
-            
+
             if (gameSettings.rounding === 'tens') {
                 const lastDigit = number % 10;
                 return lastDigit < 5 ? 'down' : 'up';
@@ -514,6 +539,19 @@
         function updateScore() {
             scoreDisplay.textContent = gameState.score;
         }
+
+        // Initialize audio on first user interaction
+        document.addEventListener('click', function() {
+            if (audioModule) {
+                audioModule.initAudio();
+            }
+        }, { once: true });
+
+        document.addEventListener('touchstart', function() {
+            if (audioModule) {
+                audioModule.initAudio();
+            }
+        }, { once: true });
     </script>
 </body>
 </html>
