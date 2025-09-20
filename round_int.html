@@ -325,8 +325,8 @@
                 </div>
 
                 <div class="choices">
-                    <button class="choice-btn" id="roundUp">⬆️ עגל למעלה</button>
                     <button class="choice-btn" id="roundDown">⬇️ עגל למטה</button>
+                    <button class="choice-btn" id="roundUp">⬆️ עגל למעלה</button>
                 </div>
             </div>
         </div>
@@ -483,11 +483,11 @@
 
             if (gameSettings.rounding === 'tens') {
                 const lastDigit = number % 10;
-                if (choice === 'down' && lastDigit < 5) isCorrect = true;
+                if (choice === 'down' && lastDigit <= 5) isCorrect = true;
                 if (choice === 'up' && lastDigit >= 5) isCorrect = true;
             } else {
                 const lastTwoDigits = number % 100;
-                if (choice === 'down' && lastTwoDigits < 50) isCorrect = true;
+                if (choice === 'down' && lastTwoDigits <= 50) isCorrect = true;
                 if (choice === 'up' && lastTwoDigits >= 50) isCorrect = true;
             }
 
