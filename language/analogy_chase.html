@@ -234,39 +234,52 @@
         let audioModule = null;
         let modulesLoaded = false;
 
-        // Load common modules and initialize game after loading
-        async function loadModulesAndInitialize() {
-            try {
-                const [arrayModule, soundModule] = await Promise.all([
-                    import('../common/utils/array.js'),
-                    import('../common/audio/sounds.js')
-                ]);
-                shuffleArray = arrayModule.shuffleArrayCopy;
-                audioModule = soundModule;
-                // Don't initialize audio here, wait for user interaction
-                modulesLoaded = true;
-                console.log('Audio module loaded, will initialize on user interaction');
-
-                // Initialize the game now that modules are loaded
-                createTrack();
-                resetGame();
-            } catch (error) {
-                console.error('Failed to load common library modules:', error);
-                // Provide fallback for shuffleArray if modules fail to load
-                shuffleArray = function(array) {
-                    const newArray = [...array];
-                    for (let i = newArray.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-                    }
-                    return newArray;
-                };
-                modulesLoaded = true;
-
-                // Initialize the game with fallback
-                createTrack();
-                resetGame();
+        // Load shuffleArray module
+        import('../common/utils/array.js').then(module => {
+            shuffleArray = module.shuffleArrayCopy;
+            console.log('Array module loaded');
+            // Start game if audio is also ready
+            if (audioModule) {
+                startGameIfReady();
             }
+        }).catch(error => {
+            console.error('Failed to load array module:', error);
+            // Provide fallback for shuffleArray
+            shuffleArray = function(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            };
+            startGameIfReady();
+        });
+
+        // Load audio module (like in division_signs.html)
+        import('../common/audio/sounds.js').then(module => {
+            audioModule = module;
+            console.log('[analogy_chase] Audio module loaded successfully');
+            console.log('[analogy_chase] Available audio functions:', Object.keys(module));
+            // Start game if array is also ready
+            if (shuffleArray) {
+                startGameIfReady();
+            }
+        }).catch(error => {
+            console.error('[analogy_chase] Failed to load audio module:', error);
+            // Game can still run without audio
+            if (shuffleArray) {
+                startGameIfReady();
+            }
+        });
+
+        function startGameIfReady() {
+            if (modulesLoaded) return;
+            if (!shuffleArray) return;
+
+            modulesLoaded = true;
+            createTrack();
+            resetGame();
         }
 
         function populateAndShuffleAnalogyPool() {
@@ -317,28 +330,25 @@
             trackEl.appendChild(chaserEl);
         }
 
-        function resetGame() {
+        async function resetGame() {
             playerPosition = PLAYER_START_POSITION;
             chaserPosition = 0;
             hintsLeft = TOTAL_HINTS;
 
             gameOverModal.classList.add('hidden');
 
-            // Initialize audio on user interaction (clicking play again)
-            if (audioModule && audioModule.initAudio) {
-                try {
-                    audioModule.initAudio();
-                    console.log('Audio initialized on game reset');
-                } catch (e) {
-                    console.error('Failed to initialize audio:', e);
-                }
+            // Initialize audio on user interaction (like in division_signs.html)
+            console.log('[analogy_chase] resetGame: Trying to init audio. audioModule=', audioModule);
+            if (audioModule) {
+                console.log('[analogy_chase] Calling audioModule.initAudio()');
+                audioModule.initAudio();
             }
 
             populateAndShuffleAnalogyPool();
 
             updatePositions();
             updateStatsDisplay();
-            generateQuestion();
+            await generateQuestion();
         }
 
         function updatePositions() {
@@ -398,19 +408,17 @@
             }
         }
 
-        function generateQuestion() {
+        async function generateQuestion() {
             if (!shuffleArray || !analogyPool || analogyPool.length === 0) {
                 console.error('Game not properly initialized');
                 return;
             }
 
-            // Initialize audio on first question if needed
-            if (audioModule && audioModule.initAudio) {
-                try {
-                    audioModule.initAudio();
-                } catch (e) {
-                    console.error('Failed to initialize audio:', e);
-                }
+            // Initialize audio if needed
+            console.log('[analogy_chase] generateQuestion: Trying to init audio. audioModule=', audioModule);
+            if (audioModule) {
+                console.log('[analogy_chase] Calling audioModule.initAudio() from generateQuestion');
+                audioModule.initAudio();
             }
 
             hintDisplay.textContent = '';
@@ -462,7 +470,7 @@
             startTimer();
         }
 
-        function handleAnswer(isCorrect, clickedButton = null) {
+        async function handleAnswer(isCorrect, clickedButton = null) {
             stopTimer();
             answersArea.querySelectorAll('button').forEach(btn => btn.disabled = true);
             hintBtn.onclick = null;
@@ -474,8 +482,12 @@
                     clickedButton.classList.add('correct');
                 }
                 // Play success sound
+                console.log('Trying to play success sound, audioModule:', audioModule);
                 if (audioModule) {
+                    console.log('audioModule exists, calling playSuccessSound');
                     audioModule.playSuccessSound();
+                } else {
+                    console.log('audioModule is null/undefined');
                 }
             } else {
                 chaserPosition++;     // Chaser moves forward 1 position
@@ -489,27 +501,31 @@
                     }
                 });
                 // Play error sound
+                console.log('Trying to play error sound, audioModule:', audioModule);
                 if (audioModule) {
+                    console.log('audioModule exists, calling playErrorSound');
                     audioModule.playErrorSound();
+                } else {
+                    console.log('audioModule is null/undefined');
                 }
             }
 
             setTimeout(() => {
                 updatePositions();
                 updateStatsDisplay();
-                setTimeout(() => {
-                    checkGameEnd();
+                setTimeout(async () => {
+                    await checkGameEnd();
                 }, 600);
             }, 500);
         }
 
-        function checkGameEnd() {
+        async function checkGameEnd() {
             if (playerPosition >= FINISH_LINE) {
                 showGameOver(true);
             } else if (chaserPosition >= playerPosition) {
                 showGameOver(false);
             } else {
-                generateQuestion();
+                await generateQuestion();
             }
         }
 
@@ -532,8 +548,12 @@
                 modalTitle.className = 'text-4xl font-bold mb-4 text-green-500';
                 modalText.textContent = customMessage || 'ברחת מהרודף והגעת אל הגביע!';
                 // Play victory sound
+                console.log('Trying to play victory sound, audioModule:', audioModule);
                 if (audioModule) {
+                    console.log('audioModule exists, calling playVictorySound');
                     audioModule.playVictorySound();
+                } else {
+                    console.log('audioModule is null/undefined');
                 }
             } else {
                 modalIcon.textContent = '🌀';
@@ -541,8 +561,12 @@
                 modalTitle.className = 'text-4xl font-bold mb-4 text-red-500';
                 modalText.textContent = 'הרודף השיג אותך. נסה שוב!';
                 // Play game over sound (lose) - only in chase game
+                console.log('Trying to play game over sound, audioModule:', audioModule);
                 if (audioModule) {
+                    console.log('audioModule exists, calling playGameOverSound');
                     audioModule.playGameOverSound();
+                } else {
+                    console.log('audioModule is null/undefined');
                 }
             }
             distanceStat.textContent = Math.max(0, playerPosition - chaserPosition);
@@ -554,25 +578,22 @@
         playAgainBtn.addEventListener('click', resetGame);
         window.addEventListener('resize', updatePositions);
 
-        // Initialize audio on first user interaction anywhere on the page
-        document.addEventListener('click', function initAudioOnce() {
-            if (audioModule && audioModule.initAudio) {
-                try {
-                    audioModule.initAudio();
-                    console.log('Audio initialized on first click');
-                } catch (e) {
-                    console.error('Failed to initialize audio:', e);
-                }
-                // Remove this listener after first click
-                document.removeEventListener('click', initAudioOnce);
+        // Initialize audio on first user interaction (like in division_signs.html)
+        document.addEventListener('click', function() {
+            console.log('[analogy_chase] First click detected. audioModule=', audioModule);
+            if (audioModule) {
+                console.log('[analogy_chase] Calling audioModule.initAudio() from first click');
+                audioModule.initAudio();
             }
         }, { once: true });
 
-        // --- אתחול המשחק ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load modules and then initialize the game
-            loadModulesAndInitialize();
-        });
+        document.addEventListener('touchstart', function() {
+            console.log('[analogy_chase] First touch detected. audioModule=', audioModule);
+            if (audioModule) {
+                console.log('[analogy_chase] Calling audioModule.initAudio() from first touch');
+                audioModule.initAudio();
+            }
+        }, { once: true });
     </script>
 </body>
 </html>
