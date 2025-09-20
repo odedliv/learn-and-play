@@ -18,18 +18,24 @@ let isInitialized = false;
  * Call this on first user interaction
  */
 export function initAudio() {
+    console.log('[sounds.js] initAudio() called');
+    console.log('[sounds.js] Current state: audioContext=', audioContext, 'isInitialized=', isInitialized, 'Tone defined?', typeof Tone !== 'undefined');
+
     // Initialize Web Audio for error sound
     if (!audioContext) {
         try {
+            console.log('[sounds.js] Creating new AudioContext...');
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('[sounds.js] AudioContext created successfully');
         } catch (e) {
-            console.error("Web Audio API is not supported:", e);
+            console.error("[sounds.js] Web Audio API is not supported:", e);
         }
     }
 
     // Initialize Tone.js for success sounds
     if (!isInitialized && typeof Tone !== 'undefined') {
         try {
+            console.log('[sounds.js] Initializing Tone.js synth...');
             correctSynth = new Tone.Synth({
                 oscillator: { type: 'triangle' },
                 envelope: {
@@ -41,13 +47,17 @@ export function initAudio() {
             }).toDestination();
 
             isInitialized = true;
+            console.log('[sounds.js] Tone.js initialized successfully');
         } catch (e) {
-            console.error('Failed to initialize Tone.js:', e);
+            console.error('[sounds.js] Failed to initialize Tone.js:', e);
         }
     } else if (typeof Tone === 'undefined') {
-        console.warn('Tone.js library not loaded. Success sounds will not work.');
+        console.warn('[sounds.js] Tone.js library not loaded. Success sounds will not work.');
+    } else {
+        console.log('[sounds.js] Already initialized, skipping...');
     }
 
+    console.log('[sounds.js] initAudio() finished. audioContext=', audioContext, 'isInitialized=', isInitialized);
     return audioContext && isInitialized;
 }
 
@@ -56,13 +66,20 @@ export function initAudio() {
  * Simple descending tone
  */
 export function playErrorSound() {
+    console.log('[sounds.js] playErrorSound() called. audioContext=', audioContext);
+
     if (!audioContext) {
+        console.log('[sounds.js] No audioContext, trying to init...');
         initAudio();
     }
 
-    if (!audioContext) return;
+    if (!audioContext) {
+        console.warn('[sounds.js] Still no audioContext after init attempt, returning');
+        return;
+    }
 
     try {
+        console.log('[sounds.js] Creating error sound with Web Audio...');
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
 
@@ -79,8 +96,9 @@ export function playErrorSound() {
 
         oscillator.start(now);
         oscillator.stop(now + 0.3);
+        console.log('[sounds.js] Error sound scheduled successfully');
     } catch (e) {
-        console.error('Error playing error sound:', e);
+        console.error('[sounds.js] Error playing error sound:', e);
     }
 }
 
@@ -103,23 +121,28 @@ export function playFailSound() {
  * Ascending arpeggio: C5 -> E5 -> G5
  */
 export function playSuccessSound() {
+    console.log('[sounds.js] playSuccessSound() called. isInitialized=', isInitialized, 'correctSynth=', correctSynth, 'Tone defined?', typeof Tone !== 'undefined');
+
     if (!isInitialized) {
+        console.log('[sounds.js] Not initialized, trying to init...');
         initAudio();
     }
 
     if (!correctSynth || typeof Tone === 'undefined') {
-        console.warn('Tone.js not initialized, falling back to Web Audio');
+        console.warn('[sounds.js] Tone.js not initialized (correctSynth=', correctSynth, '), falling back to Web Audio');
         playWebAudioSuccess();
         return;
     }
 
     try {
+        console.log('[sounds.js] Playing success sound with Tone.js...');
         const now = Tone.now();
         correctSynth.triggerAttackRelease("C5", "8n", now);
         correctSynth.triggerAttackRelease("E5", "8n", now + 0.15);
         correctSynth.triggerAttackRelease("G5", "8n", now + 0.3);
+        console.log('[sounds.js] Success sound scheduled successfully');
     } catch (e) {
-        console.error('Error playing success sound:', e);
+        console.error('[sounds.js] Error playing success sound:', e);
         playWebAudioSuccess(); // Fallback
     }
 }
@@ -224,9 +247,15 @@ export function playGameOverSound() {
  * Fallback Web Audio success sound if Tone.js is not available
  */
 function playWebAudioSuccess() {
-    if (!audioContext) return;
+    console.log('[sounds.js] playWebAudioSuccess() fallback called. audioContext=', audioContext);
+
+    if (!audioContext) {
+        console.warn('[sounds.js] No audioContext for fallback success sound');
+        return;
+    }
 
     try {
+        console.log('[sounds.js] Creating fallback success sound with Web Audio...');
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
 
@@ -243,8 +272,9 @@ function playWebAudioSuccess() {
 
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.4);
+        console.log('[sounds.js] Fallback success sound scheduled successfully');
     } catch (e) {
-        console.error('Error playing fallback success sound:', e);
+        console.error('[sounds.js] Error playing fallback success sound:', e);
     }
 }
 
