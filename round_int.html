@@ -336,12 +336,25 @@
         // Audio module from common library
         let audioModule = null;
 
+        // Timer module from common library
+        let timerModule = null;
+        let gameTimer = null;
+        let elapsedTime = 0; // Track total game time
+
         // Load audio module
         import('./common/audio/sounds.js').then(module => {
             audioModule = module;
             console.log('Audio module loaded successfully');
         }).catch(error => {
             console.error('Failed to load audio module:', error);
+        });
+
+        // Load timer module
+        import('./common/timer/timer.js').then(module => {
+            timerModule = module;
+            console.log('Timer module loaded successfully');
+        }).catch(error => {
+            console.error('Failed to load timer module:', error);
         });
 
         // משתנים גלובליים
@@ -362,6 +375,7 @@
         const backBtn = document.getElementById('backToSetup');
         const currentNumberEl = document.getElementById('currentNumber');
         const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
         const gameInstructions = document.getElementById('gameInstructions');
         const roundDownBtn = document.getElementById('roundDown');
         const roundUpBtn = document.getElementById('roundUp');
@@ -403,14 +417,48 @@
             setupScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             gameState.score = 0;
+            elapsedTime = 0;
             updateScore();
             updateInstructions();
             generateNewNumber();
+
+            // Start the count-up timer
+            startCountUpTimer();
         }
 
         function backToSetup() {
+            // Stop timer when going back
+            if (gameTimer) {
+                gameTimer = null;
+            }
+            if (window.timerInterval) {
+                clearInterval(window.timerInterval);
+            }
             setupScreen.style.display = 'block';
             gameScreen.style.display = 'none';
+        }
+
+        function startCountUpTimer() {
+            // Clear any existing timer
+            if (window.timerInterval) {
+                clearInterval(window.timerInterval);
+            }
+
+            elapsedTime = 0;
+            updateTimerDisplay();
+
+            // Count up timer (not using common timer since it's designed for countdown)
+            window.timerInterval = setInterval(() => {
+                elapsedTime++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            const secondsStr = seconds < 10 ? '0' + seconds : seconds;
+            timerDisplay.textContent = `${minutes}:${secondsStr}`;
         }
 
         function updateInstructions() {

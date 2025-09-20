@@ -216,17 +216,27 @@
         let attempts = 0;
         const TOTAL_TIME = 120; // 2 minutes in seconds
         let timeLeft = TOTAL_TIME;
-        let gameTimerIntervalId = null;
         const CIRCLE_CIRCUMFERENCE = 283; // 2 * Math.PI * 45
 
         // Audio module from common library
         let audioModule = null;
+
+        // Timer module from common library
+        let timerModule = null;
+        let gameTimer = null;
 
         // Load audio module
         import('./common/audio/sounds.js').then(module => {
             audioModule = module;
         }).catch(error => {
             console.error('Failed to load audio module:', error);
+        });
+
+        // Load timer module
+        import('./common/timer/timer.js').then(module => {
+            timerModule = module;
+        }).catch(error => {
+            console.error('Failed to load timer module:', error);
         });
 
         startButton.addEventListener('click', () => {
@@ -278,40 +288,40 @@
             scoreDisplay.textContent = score;
         }
 
-        function updateTimerDisplay() {
-            const offset = CIRCLE_CIRCUMFERENCE - (timeLeft / TOTAL_TIME) * CIRCLE_CIRCUMFERENCE;
-            timerProgress.style.strokeDashoffset = offset;
+        function startGameTimer() {
+            // Stop any existing timer
+            if (gameTimer) {
+                gameTimer.stop();
+            }
 
-            const minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
-            seconds = seconds < 10 ? '0' + seconds : seconds;
-            timerText.textContent = `${minutes}:${seconds}`;
+            // Create new timer using common timer module
+            if (timerModule) {
+                gameTimer = timerModule.createCircularTimer({
+                    duration: TOTAL_TIME,
+                    svgCircle: timerProgress,
+                    textElement: timerText,
+                    circumference: CIRCLE_CIRCUMFERENCE,
+                    onTick: (timeRemaining) => {
+                        timeLeft = timeRemaining;
+                    },
+                    onComplete: () => {
+                        endGame();
+                    },
+                    warningTime: 10
+                });
 
-            if (timeLeft <= 10 && !timerProgress.classList.contains('text-red-500')) {
-                timerProgress.classList.remove('text-blue-500');
-                timerProgress.classList.add('text-red-500');
-            } else if (timeLeft > 10 && !timerProgress.classList.contains('text-blue-500')) {
-                 timerProgress.classList.remove('text-red-500');
-                 timerProgress.classList.add('text-blue-500');
+                gameTimer.start();
+            } else {
+                // Fallback if timer module not loaded
+                console.error('Timer module not loaded');
             }
         }
 
-        function startGameTimer() {
-            clearInterval(gameTimerIntervalId);
-            timeLeft = TOTAL_TIME;
-            updateTimerDisplay();
-
-            gameTimerIntervalId = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    endGame();
-                }
-            }, 1000);
-        }
-
         function endGame() {
-            clearInterval(gameTimerIntervalId);
+            // Stop timer using common timer module
+            if (gameTimer) {
+                gameTimer.stop();
+            }
             gameScreen.classList.add('hidden');
             finalScoreDisplay.textContent = score;
             endScreen.classList.remove('hidden');

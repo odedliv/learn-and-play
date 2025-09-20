@@ -232,6 +232,8 @@
         // Import from common library
         let shuffleArray = null;
         let audioModule = null;
+        let timerModule = null;
+        let gameTimer = null;
         let modulesLoaded = false;
 
         // Load shuffleArray module
@@ -271,6 +273,14 @@
             if (shuffleArray) {
                 startGameIfReady();
             }
+        });
+
+        // Load timer module
+        import('../common/timer/timer.js').then(module => {
+            timerModule = module;
+            console.log('[analogy_chase] Timer module loaded successfully');
+        }).catch(error => {
+            console.error('[analogy_chase] Failed to load timer module:', error);
         });
 
         function startGameIfReady() {
@@ -378,33 +388,47 @@
         }
 
         function startTimer() {
-            timeLeft = TIME_PER_QUESTION;
-            updateTimerDisplay();
+            // Stop any existing timer
+            if (gameTimer) {
+                gameTimer.stop();
+            }
 
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    handleAnswer(false);
-                }
-            }, 1000);
+            // Create new timer for this question
+            if (timerModule) {
+                gameTimer = timerModule.createCircularTimer({
+                    duration: TIME_PER_QUESTION,
+                    svgCircle: timerCircle,
+                    textElement: timeDisplay,
+                    circumference: 100, // The SVG uses 100 as circumference
+                    onTick: (timeRemaining) => {
+                        timeLeft = timeRemaining;
+                    },
+                    onComplete: () => {
+                        handleAnswer(false);
+                    },
+                    warningTime: 5
+                });
+
+                gameTimer.start();
+            } else {
+                // Fallback if timer module not loaded
+                timeLeft = TIME_PER_QUESTION;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timeDisplay.textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        handleAnswer(false);
+                    }
+                }, 1000);
+            }
         }
 
         function stopTimer() {
-            clearInterval(timerInterval);
-        }
-
-        function updateTimerDisplay() {
-            timeDisplay.textContent = timeLeft;
-            const progress = (timeLeft / TIME_PER_QUESTION) * 100;
-            timerCircle.style.strokeDashoffset = 100 - progress;
-
-            if(timeLeft <= 5) {
-                timerCircle.classList.remove('text-sky-500');
-                timerCircle.classList.add('text-red-500');
-            } else {
-                timerCircle.classList.remove('text-red-500');
-                timerCircle.classList.add('text-sky-500');
+            if (gameTimer) {
+                gameTimer.stop();
+            } else if (timerInterval) {
+                clearInterval(timerInterval);
             }
         }
 
@@ -532,9 +556,14 @@
         function useHint(categoryName) {
             if (hintsLeft > 0) {
                 hintsLeft--;
-                timeLeft = Math.min(TIME_PER_QUESTION, timeLeft + HINT_TIME_BONUS);
+                // Add time using the common timer module
+                if (gameTimer) {
+                    gameTimer.addTime(HINT_TIME_BONUS);
+                } else {
+                    // Fallback
+                    timeLeft = Math.min(TIME_PER_QUESTION, timeLeft + HINT_TIME_BONUS);
+                }
                 updateStatsDisplay();
-                updateTimerDisplay();
                 hintDisplay.textContent = `רמז: ${categoryName}`;
                 hintBtn.disabled = true;
                 hintBtn.onclick = null;
