@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "source_file": "נרדפות_לאסי_שובי_הביתה.csv",
+    "total_entries": 11,
+    "minimum_alternatives_required": 2
+  },
+  "statistics": {
+    "min_alternatives": 2,
+    "max_alternatives": 3,
+    "total_alternatives": 25,
+    "alternative_counts": {
+      "2": 8,
+      "3": 3
+    },
+    "average_alternatives": 2.27
+  },
+  "entries": [
+    {
+      "id": 1,
+      "alternatives_count": 2,
+      "alternatives": [
+        "נתקלה",
+        "נפגשה"
+      ]
+    },
+    {
+      "id": 2,
+      "alternatives_count": 3,
+      "alternatives": [
+        "רחש",
+        "רישרוש",
+        "רעש קל"
+      ]
+    },
+    {
+      "id": 3,
+      "alternatives_count": 3,
+      "alternatives": [
+        "חשכת הלילה",
+        "אפלה",
+        "עלטה"
+      ]
+    },
+    {
+      "id": 4,
+      "alternatives_count": 2,
+      "alternatives": [
+        "נאחז",
+        "נתפס"
+      ]
+    },
+    {
+      "id": 5,
+      "alternatives_count": 2,
+      "alternatives": [
+        "בפליאה",
+        "בתדהמה"
+      ]
+    },
+    {
+      "id": 6,
+      "alternatives_count": 2,
+      "alternatives": [
+        "מרבד",
+        "שטיח"
+      ]
+    },
+    {
+      "id": 7,
+      "alternatives_count": 2,
+      "alternatives": [
+        "מפקפק",
+        "מטיל ספק"
+      ]
+    },
+    {
+      "id": 8,
+      "alternatives_count": 2,
+      "alternatives": [
+        "לגמה",
+        "שתתה"
+      ]
+    },
+    {
+      "id": 9,
+      "alternatives_count": 3,
+      "alternatives": [
+        "מאומה",
+        "לא כלום",
+        "שום דבר"
+      ]
+    },
+    {
+      "id": 10,
+      "alternatives_count": 2,
+      "alternatives": [
+        "נאלצו",
+        "היו חייבים"
+      ]
+    },
+    {
+      "id": 11,
+      "alternatives_count": 2,
+      "alternatives": [
+        "תשישות",
+        "עייפות"
+      ]
+    }
+  ]
+}
