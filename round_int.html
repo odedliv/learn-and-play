@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק עיגול מספרים</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .setup-screen {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .setup-group {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .setup-group h3 {
+            margin-top: 0;
+            color: #555;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-option:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+
+        .radio-option.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+
+        .digit-selector {
+            margin: 20px 0;
+        }
+
+        .digit-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .digit-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .digit-btn:hover {
+            border-color: #4CAF50;
+            transform: scale(1.1);
+        }
+
+        .digit-btn.selected {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #FF6B6B, #ff5252);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,107,107,0.3);
+        }
+
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .game-screen {
+            display: none;
+            padding: 20px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .timer, .score {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .game-content {
+            display: flex;
+            gap: 60px;
+            align-items: stretch;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .number-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-right: 3px solid #dee2e6;
+            padding-right: 30px;
+        }
+
+        .number-display h3 {
+            margin-bottom: 30px;
+            color: #495057;
+            font-size: 24px;
+        }
+
+        .current-number {
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            padding: 40px 60px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            border: 3px solid #e9ecef;
+            min-width: 250px;
+        }
+
+        .choices {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 30px;
+            padding-left: 30px;
+        }
+
+        .choice-btn {
+            padding: 25px 40px;
+            font-size: 28px;
+            font-weight: bold;
+            border: 3px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.5s;
+            min-height: 80px;
+        }
+
+        .choice-btn:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
+        }
+
+        .choice-btn.correct {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+        }
+
+        .choice-btn.incorrect {
+            background: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .game-content {
+                flex-direction: column;
+            }
+            
+            .current-number {
+                font-size: 48px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 משחק עיגול מספרים 🎯</h1>
+        </div>
+
+        <!-- מסך הגדרות -->
+        <div id="setupScreen" class="setup-screen">
+            <div class="setup-group">
+                <h3>🎪 בחר סוג עיגול:</h3>
+                <div class="radio-group">
+                    <div class="radio-option" data-rounding="tens">
+                        <input type="radio" name="rounding" value="tens" id="tens">
+                        <label for="tens">עיגול לעשרת הקרובה</label>
+                    </div>
+                    <div class="radio-option" data-rounding="hundreds">
+                        <input type="radio" name="rounding" value="hundreds" id="hundreds">
+                        <label for="hundreds">עיגול למאה הקרובה</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-group">
+                <h3>🔢 בחר מספר ספרות:</h3>
+                <div class="digit-buttons">
+                    <div class="digit-btn" data-digits="2">2</div>
+                    <div class="digit-btn" data-digits="3">3</div>
+                    <div class="digit-btn" data-digits="4">4</div>
+                    <div class="digit-btn" data-digits="5">5</div>
+                    <div class="digit-btn" data-digits="6">6</div>
+                    <div class="digit-btn" data-digits="7">7</div>
+                    <div class="digit-btn" data-digits="8">8</div>
+                    <div class="digit-btn" data-digits="9">9</div>
+                </div>
+            </div>
+
+            <button class="start-btn" id="startGame" disabled>🚀 התחל משחק!</button>
+        </div>
+
+        <!-- מסך משחק -->
+        <div id="gameScreen" class="game-screen">
+            <div class="game-header">
+                <div class="timer">⏱️ זמן: <span id="timerDisplay">00:00</span></div>
+                <button class="back-btn" id="backToSetup">🔙 חזור להגדרות</button>
+                <div class="score">🏆 ציון: <span id="scoreDisplay">0</span></div>
+            </div>
+
+            <div class="game-content">
+                <div class="number-display">
+                    <h3 id="gameInstructions">עגל את המספר:</h3>
+                    <div class="current-number" id="currentNumber">123</div>
+                </div>
+
+                <div class="choices">
+                    <button class="choice-btn" id="roundUp">⬆️ עגל למעלה</button>
+                    <button class="choice-btn" id="roundDown">⬇️ עגל למטה</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // משתנים גלובליים
+        let gameSettings = {
+            rounding: null,
+            digits: null
+        };
+        let gameState = {
+            currentNumber: 0,
+            score: 0,
+            correctAnswer: null
+        };
+
+        // אלמנטים
+        const setupScreen = document.getElementById('setupScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const startBtn = document.getElementById('startGame');
+        const backBtn = document.getElementById('backToSetup');
+        const currentNumberEl = document.getElementById('currentNumber');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const gameInstructions = document.getElementById('gameInstructions');
+        const roundDownBtn = document.getElementById('roundDown');
+        const roundUpBtn = document.getElementById('roundUp');
+
+        // מאזיני אירועים להגדרות
+        document.querySelectorAll('.radio-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                option.querySelector('input').checked = true;
+                gameSettings.rounding = option.dataset.rounding;
+                updateStartButton();
+            });
+        });
+
+        document.querySelectorAll('.digit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.digit-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                gameSettings.digits = parseInt(btn.dataset.digits);
+                updateStartButton();
+            });
+        });
+
+        function updateStartButton() {
+            startBtn.disabled = !(gameSettings.rounding && gameSettings.digits);
+        }
+
+        // התחלת משחק
+        startBtn.addEventListener('click', startGame);
+        backBtn.addEventListener('click', backToSetup);
+
+        function startGame() {
+            setupScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            gameState.score = 0;
+            updateScore();
+            updateInstructions();
+            generateNewNumber();
+        }
+
+        function backToSetup() {
+            setupScreen.style.display = 'block';
+            gameScreen.style.display = 'none';
+        }
+
+        function updateInstructions() {
+            const roundingText = gameSettings.rounding === 'tens' ? 'לעשרת הקרובה' : 'למאה הקרובה';
+            gameInstructions.textContent = `עגל את המספר ${roundingText}:`;
+            
+            const downText = gameSettings.rounding === 'tens' ? 'עגל כלפי מטה' : 'עגל כלפי מטה';
+            const upText = gameSettings.rounding === 'tens' ? 'עגל כלפי מעלה' : 'עגל כלפי מעלה';
+            
+            // הכפתורים יוצגו עם המספרים המעוגלים בפונקציה calculateCorrectAnswer
+        }
+
+        function generateNewNumber() {
+            const min = Math.pow(10, gameSettings.digits - 1);
+            const max = Math.pow(10, gameSettings.digits) - 1;
+            
+            let number;
+            do {
+                number = Math.floor(Math.random() * (max - min + 1)) + min;
+            } while (isRounded(number));
+            
+            gameState.currentNumber = number;
+            currentNumberEl.textContent = number;
+            
+            // נקה את הצביעה מהכפתורים
+            roundDownBtn.classList.remove('correct', 'incorrect');
+            roundUpBtn.classList.remove('correct', 'incorrect');
+            
+            calculateCorrectAnswer();
+        }
+
+        function isRounded(number) {
+            if (gameSettings.rounding === 'tens') {
+                return number % 10 === 0;
+            } else {
+                return number % 100 === 0;
+            }
+        }
+
+        function calculateCorrectAnswer() {
+            const number = gameState.currentNumber;
+            let roundDown, roundUp;
+            
+            if (gameSettings.rounding === 'tens') {
+                roundDown = Math.floor(number / 10) * 10;
+                roundUp = Math.ceil(number / 10) * 10;
+            } else {
+                roundDown = Math.floor(number / 100) * 100;
+                roundUp = Math.ceil(number / 100) * 100;
+            }
+            
+            gameState.correctAnswer = {
+                down: roundDown,
+                up: roundUp
+            };
+            
+            // עדכון טקסט הכפתורים עם המספרים המעוגלים
+            roundUpBtn.innerHTML = `${roundUp}`;
+            roundDownBtn.innerHTML = `${roundDown}`;
+        }
+
+        // מאזיני אירועים לבחירות
+        roundDownBtn.addEventListener('click', () => makeChoice('down'));
+        roundUpBtn.addEventListener('click', () => makeChoice('up'));
+
+        function makeChoice(choice) {
+            const number = gameState.currentNumber;
+            let isCorrect = false;
+            const chosenButton = choice === 'down' ? roundDownBtn : roundUpBtn;
+            
+            if (gameSettings.rounding === 'tens') {
+                const lastDigit = number % 10;
+                if (choice === 'down' && lastDigit < 5) isCorrect = true;
+                if (choice === 'up' && lastDigit >= 5) isCorrect = true;
+            } else {
+                const lastTwoDigits = number % 100;
+                if (choice === 'down' && lastTwoDigits < 50) isCorrect = true;
+                if (choice === 'up' && lastTwoDigits >= 50) isCorrect = true;
+            }
+            
+            showFeedback(isCorrect, chosenButton);
+            
+            if (isCorrect) {
+                gameState.score++;
+                updateScore();
+            }
+            
+            setTimeout(() => {
+                generateNewNumber();
+            }, 1000);
+        }
+
+        function showFeedback(isCorrect, chosenButton) {
+            // צבע את הכפתור שנבחר
+            if (isCorrect) {
+                chosenButton.classList.add('correct');
+            } else {
+                chosenButton.classList.add('incorrect');
+                // גם צבע את הכפתור הנכון בירוק
+                const correctChoice = getCorrectChoice();
+                const correctButton = correctChoice === 'down' ? roundDownBtn : roundUpBtn;
+                correctButton.classList.add('correct');
+            }
+        }
+
+        function getCorrectChoice() {
+            const number = gameState.currentNumber;
+            
+            if (gameSettings.rounding === 'tens') {
+                const lastDigit = number % 10;
+                return lastDigit < 5 ? 'down' : 'up';
+            } else {
+                const lastTwoDigits = number % 100;
+                return lastTwoDigits < 50 ? 'down' : 'up';
+            }
+        }
+
+        function updateScore() {
+            scoreDisplay.textContent = gameState.score;
+        }
+    </script>
+</body>
+</html>
