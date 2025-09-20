@@ -431,7 +431,7 @@
         <div id="gameOverModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-title">🏁 הזמן נגמר! 🏁</div>
-                <div class="modal-message">עבודה מצוינת!</div>
+                <div class="modal-message" id="modalMessage">עבודה מצוינת!</div>
                 <div class="modal-score" id="finalScore">0</div>
                 <div class="modal-message">נקודות</div>
                 <div class="modal-buttons">
@@ -450,6 +450,7 @@
         let timerModule = null;
         let gameTimer = null;
         const GAME_DURATION = 120; // 2 minutes countdown timer
+        const VICTORY_SCORE_THRESHOLD = 10; // Minimum score for victory
         let timeLeft = GAME_DURATION;
 
         // Load audio module
@@ -494,6 +495,7 @@
 
         // Modal elements
         const gameOverModal = document.getElementById('gameOverModal');
+        const modalMessage = document.getElementById('modalMessage');
         const finalScoreDisplay = document.getElementById('finalScore');
         const playAgainBtn = document.getElementById('playAgainBtn');
         const backToMenuBtn = document.getElementById('backToMenuBtn');
@@ -606,13 +608,23 @@
                 gameTimer.stop();
             }
 
-            // Play victory or game over sound
+            // Check if player achieved victory
+            const isVictory = gameState.score >= VICTORY_SCORE_THRESHOLD;
+
+            // Play appropriate sound
             if (audioModule) {
-                if (gameState.score >= 10) {
+                if (isVictory) {
                     audioModule.playVictorySound();
                 } else {
                     audioModule.playGameOverSound();
                 }
+            }
+
+            // Update modal message based on score
+            if (isVictory) {
+                modalMessage.textContent = 'עבודה מצוינת!';
+            } else {
+                modalMessage.textContent = '';
             }
 
             // Show modal with final score
