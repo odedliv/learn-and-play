@@ -48,9 +48,12 @@ suggest 2 commit messages:
 shorter form: `\d`
   1. diagnoze this bug
   2. if there is no test falling because of this bug, add a unit test.
-  3. if possible, suggest a fix.
-  4. if fixed and possible, test your fix.  if it needs push - say so.
-  5. summarize.
+  3. verify the relevant test case fails.
+  4. if possible, suggest a fix.
+  5. if you had a suggestion to fix, try to fix.
+  5. if fixed, verify the test case pass.
+  6. suggest some commit messages with verious lenghts for me to decide.
+  7. summarize.
 
 **\continue**:
 shorter form: `\c`

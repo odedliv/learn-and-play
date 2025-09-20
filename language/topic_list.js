@@ -6,9 +6,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Define the path to the index file
         const indexPath = './data/topic_index.json';
 
+        console.log('[DEBUG] Loading topics from:', indexPath);
+        console.log('[DEBUG] Current URL:', window.location.href);
+
         try {
-            // Fetch the index file
-            const response = await fetch(indexPath);
+            // Fetch the index file (with cache busting to ensure fresh data)
+            const cacheBuster = `?t=${Date.now()}`;
+            const response = await fetch(indexPath + cacheBuster);
 
             if (!response.ok) {
                 throw new Error(`Failed to load topics: ${response.status}`);
@@ -17,14 +21,21 @@ document.addEventListener('DOMContentLoaded', function() {
             // Parse the JSON data
             const data = await response.json();
 
+            console.log('[DEBUG] Loaded topic_index.json:', data);
+            console.log('[DEBUG] Total files in index:', data.total_files);
+            console.log('[DEBUG] Files found:', data.files.map(f => f.filename));
+
             // Access the files array
             const files = data.files;
 
             // Get the topic selection area div
             const topicSelectionArea = document.getElementById('topic-selection-area');
 
+            console.log('[DEBUG] Creating buttons for', files.length, 'topics');
+
             // Create a button for each file
-            files.forEach(file => {
+            files.forEach((file, index) => {
+                console.log(`[DEBUG] Creating button ${index + 1}:`, file.filename);
                 // Create a new button element
                 const button = document.createElement('button');
 

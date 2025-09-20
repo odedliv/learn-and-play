@@ -51,6 +51,12 @@
     </div>
 
     <script src="memory_game_engine.js" type="module"></script>
-    <script src="topic_list.js" defer></script>
+    <script>
+        // Add cache busting to ensure fresh topic_list.js
+        const script = document.createElement('script');
+        script.src = 'topic_list.js?v=' + Date.now();
+        script.defer = true;
+        document.body.appendChild(script);
+    </script>
 </body>
 </html>
