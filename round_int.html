@@ -256,6 +256,88 @@
             box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
         }
 
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+
+        .modal-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .modal-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #5a6268;
+        }
+
         @media (max-width: 768px) {
             .game-content {
                 flex-direction: column;
@@ -313,7 +395,21 @@
         <!-- מסך משחק -->
         <div id="gameScreen" class="game-screen">
             <div class="game-header">
-                <div class="timer">⏱️ זמן: <span id="timerDisplay">00:00</span></div>
+                <div class="timer" style="display: flex; align-items: center; gap: 10px;">
+                    ⏱️ זמן:
+                    <div style="position: relative; width: 50px; height: 50px;">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                            <!-- Background circle -->
+                            <circle stroke="#e0e0e0" stroke-width="8" fill="transparent" r="42" cx="50" cy="50"></circle>
+                            <!-- Progress circle -->
+                            <circle id="timerProgress" stroke="#4CAF50" stroke-width="8" stroke-linecap="round"
+                                    fill="transparent" r="42" cx="50" cy="50"
+                                    style="stroke-dasharray: 264; stroke-dashoffset: 0; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke 0.3s;">
+                            </circle>
+                        </svg>
+                        <div id="timerDisplay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #333;">2:00</div>
+                    </div>
+                </div>
                 <button class="back-btn" id="backToSetup">🔙 חזור להגדרות</button>
                 <div class="score">🏆 ציון: <span id="scoreDisplay">0</span></div>
             </div>
@@ -330,6 +426,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- Game Over Modal -->
+        <div id="gameOverModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">🏁 הזמן נגמר! 🏁</div>
+                <div class="modal-message">עבודה מצוינת!</div>
+                <div class="modal-score" id="finalScore">0</div>
+                <div class="modal-message">נקודות</div>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-primary" id="playAgainBtn">🔄 שחק שוב</button>
+                    <button class="modal-btn modal-btn-secondary" id="backToMenuBtn">🏠 חזרה לתפריט</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -339,7 +449,8 @@
         // Timer module from common library
         let timerModule = null;
         let gameTimer = null;
-        let elapsedTime = 0; // Track total game time
+        const GAME_DURATION = 120; // 2 minutes countdown timer
+        let timeLeft = GAME_DURATION;
 
         // Load audio module
         import('./common/audio/sounds.js').then(module => {
@@ -379,6 +490,13 @@
         const gameInstructions = document.getElementById('gameInstructions');
         const roundDownBtn = document.getElementById('roundDown');
         const roundUpBtn = document.getElementById('roundUp');
+        const timerProgress = document.getElementById('timerProgress');
+
+        // Modal elements
+        const gameOverModal = document.getElementById('gameOverModal');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const backToMenuBtn = document.getElementById('backToMenuBtn');
 
         // מאזיני אירועים להגדרות
         document.querySelectorAll('.radio-option').forEach(option => {
@@ -417,48 +535,89 @@
             setupScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             gameState.score = 0;
-            elapsedTime = 0;
             updateScore();
             updateInstructions();
             generateNewNumber();
 
-            // Start the count-up timer
-            startCountUpTimer();
+            // Start the countdown timer
+            startCountdownTimer();
         }
 
         function backToSetup() {
             // Stop timer when going back
             if (gameTimer) {
+                gameTimer.stop();
                 gameTimer = null;
-            }
-            if (window.timerInterval) {
-                clearInterval(window.timerInterval);
             }
             setupScreen.style.display = 'block';
             gameScreen.style.display = 'none';
         }
 
-        function startCountUpTimer() {
-            // Clear any existing timer
-            if (window.timerInterval) {
-                clearInterval(window.timerInterval);
+        function startCountdownTimer() {
+            // Stop any existing timer
+            if (gameTimer) {
+                gameTimer.stop();
             }
 
-            elapsedTime = 0;
-            updateTimerDisplay();
+            // Create countdown timer using common timer module
+            if (timerModule) {
+                // Calculate circumference for our radius (42)
+                const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 42;
 
-            // Count up timer (not using common timer since it's designed for countdown)
-            window.timerInterval = setInterval(() => {
-                elapsedTime++;
-                updateTimerDisplay();
-            }, 1000);
+                gameTimer = timerModule.createCircularTimer({
+                    duration: GAME_DURATION,
+                    svgCircle: timerProgress,
+                    textElement: timerDisplay,
+                    circumference: CIRCLE_CIRCUMFERENCE,
+                    onTick: (timeRemaining) => {
+                        timeLeft = timeRemaining;
+                    },
+                    onComplete: () => {
+                        endGame();
+                    },
+                    onWarning: (timeRemaining) => {
+                        // Change color to red when warning
+                        timerProgress.style.stroke = '#dc3545';
+                    },
+                    warningTime: 10
+                });
+
+                gameTimer.start();
+            } else {
+                // Fallback if timer module not loaded
+                console.error('Timer module not loaded, using fallback');
+                timeLeft = GAME_DURATION;
+                const fallbackTimer = setInterval(() => {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                    if (timeLeft <= 0) {
+                        clearInterval(fallbackTimer);
+                        endGame();
+                    }
+                }, 1000);
+            }
         }
 
-        function updateTimerDisplay() {
-            const minutes = Math.floor(elapsedTime / 60);
-            const seconds = elapsedTime % 60;
-            const secondsStr = seconds < 10 ? '0' + seconds : seconds;
-            timerDisplay.textContent = `${minutes}:${secondsStr}`;
+        function endGame() {
+            // Stop timer
+            if (gameTimer) {
+                gameTimer.stop();
+            }
+
+            // Play victory or game over sound
+            if (audioModule) {
+                if (gameState.score >= 10) {
+                    audioModule.playVictorySound();
+                } else {
+                    audioModule.playGameOverSound();
+                }
+            }
+
+            // Show modal with final score
+            finalScoreDisplay.textContent = gameState.score;
+            gameOverModal.classList.add('show');
         }
 
         function updateInstructions() {
@@ -600,6 +759,17 @@
                 audioModule.initAudio();
             }
         }, { once: true });
+
+        // Modal event listeners
+        playAgainBtn.addEventListener('click', () => {
+            gameOverModal.classList.remove('show');
+            startGame();
+        });
+
+        backToMenuBtn.addEventListener('click', () => {
+            gameOverModal.classList.remove('show');
+            backToSetup();
+        });
     </script>
 </body>
 </html>
