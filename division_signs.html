@@ -233,7 +233,7 @@
         });
 
         // Load timer module
-        import('./common/timer/timer.js').then(module => {
+        import('./common/timer/countdown_timer.js').then(module => {
             timerModule = module;
         }).catch(error => {
             console.error('Failed to load timer module:', error);

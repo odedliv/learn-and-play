@@ -8,6 +8,10 @@ you may decide to create a new file, split a file, or add to an existing file.
 
 you may decide whether or not to include the prompt that you used to generate the changes.
 
+# rule: code reuse
+prefer reusing code components from directory common/ over writing specific code.
+
+
 # rule: testing practice
 ## When creating or modifying functionality:
 - Write or update tests for any new functions, especially in /common utilities

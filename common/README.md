@@ -13,9 +13,7 @@ common/
 ├── game/           # Game state management
 │   └── state.js    # GameState, ScoreManager, StatsTracker
 ├── timer/          # Timer implementations
-│   ├── timer_option_1.js  # Function-based timers
-│   ├── timer_option_2.js  # Class-based timer
-│   └── timer_option_3.js  # Circular SVG progress timer
+│   └── countdown_timer.js  # Circular SVG progress countdown timer
 ├── ui/             # UI components
 │   └── modal.js    # Modal dialogs and notifications
 ├── utils/          # General utilities
@@ -73,7 +71,7 @@ if (wonGame) {
 ### Import from Specific Modules
 ```javascript
 import { shuffleArray } from '../common/utils/array.js';
-import { GameTimer } from '../common/timer/timer_option_2.js';
+import { createCircularTimer } from '../common/timer/countdown_timer.js';
 ```
 
 ## Available Functions
@@ -102,27 +100,7 @@ import { GameTimer } from '../common/timer/timer_option_2.js';
 
 ### Timer Utilities
 
-#### Option 1: Functional (`timer/timer_option_1.js`)
-```javascript
-const timer = createCountdownTimer(60,
-    (timeLeft) => console.log(timeLeft),
-    () => console.log('Complete!')
-);
-timer.start();
-```
-
-#### Option 2: Class-based (`timer/timer_option_2.js`)
-```javascript
-const timer = new GameTimer({
-    mode: 'countdown',
-    duration: 60,
-    onTick: (time) => updateDisplay(time),
-    onComplete: () => endGame()
-});
-timer.start();
-```
-
-#### Option 3: Circular Progress (`timer/timer_option_3.js`)
+#### Countdown Timer with Circular Progress (`timer/countdown_timer.js`)
 ```javascript
 // Create SVG visual timer
 const { container, progressCircle, textDisplay } = createTimerSVG();
@@ -287,8 +265,12 @@ let timerInterval = setInterval(() => {
 }, 1000);
 
 // After
-import { createCountdownTimer } from '../common/timer/timer_option_1.js';
-const timer = createCountdownTimer(60, updateDisplay, onComplete);
+import { createCircularTimer } from '../common/timer/countdown_timer.js';
+const timer = createCircularTimer({
+    duration: 60,
+    textElement: timerDisplay,
+    onComplete: onComplete
+});
 timer.start();
 ```
 
